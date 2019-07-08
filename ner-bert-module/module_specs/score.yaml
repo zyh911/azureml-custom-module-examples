@@ -47,6 +47,8 @@ implementation:
         - pip:
           - --extra-index-url=https://test.pypi.org/simple
           - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+          - azureml==0.2.7
+          - azureml-core==1.0.43
           - pytorch-pretrained-bert==0.6.1
           - seqeval==0.0.5
           - tqdm==4.31.1
@@ -55,7 +57,7 @@ implementation:
           - pandas==0.24.1
           - pyarrow==0.12.1
           - scikit-plot==0.3.7
-          - matplotlib==2.2.2
+          - matplotlib==3.1.0
           - git+https://github.com/Bowen-Guo/azureml-custom-module-examples.git@master#subdirectory=ner-bert-module
     invoking:
       module: script.score

@@ -14,7 +14,7 @@ from seqeval.metrics import classification_report
 from torch.utils.data import (DataLoader, SequentialSampler, TensorDataset)
 from tqdm import tqdm
 from .arg_opts import score_opts
-from .utils import get_metrics, plot
+from .utils import plot
 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -110,14 +110,13 @@ class Ner:
         return df_pred
 
     def evaluation(self, df_pred: pd.DataFrame, test_features: pd.DataFrame, output_eval_dir):
+        if not os.path.exists(output_eval_dir):
+            os.makedirs(output_eval_dir)
         # Load features
         header_names = set(list(test_features.columns.values))
         df_pred.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
 
         if "label_ids" in header_names:
-            if not os.path.exists(output_eval_dir):
-                os.makedirs(output_eval_dir)
-
             input_mask_list = test_features['input_mask'].tolist()
             label_ids_list = test_features['label_ids'].tolist()
             logger.info("***** Running evaluation *****")
@@ -171,7 +170,7 @@ class Ner:
 
 if __name__ == "__main__":
     parser = score_opts()
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     meta = {'No cuda': str(args.no_cuda),
             'Local Rank': str(args.local_rank),
