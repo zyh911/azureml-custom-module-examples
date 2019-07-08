@@ -51,10 +51,10 @@ class Ner:
         output_model_file = os.path.join(model_dir, WEIGHTS_NAME)
         config = BertConfig(output_config_file)
         model = BertForTokenClassification(config, num_labels=model_config["num_labels"])
-        if self.no_cuda:
-            model.load_state_dict(torch.load(output_model_file, map_location='cpu'))
-        else:
+        if torch.cuda.is_available() and not self.no_cuda:
             model.load_state_dict(torch.load(output_model_file))
+        else:
+            model.load_state_dict(torch.load(output_model_file, map_location='cpu'))
 
         return model, model_config
 
