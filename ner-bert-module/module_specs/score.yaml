@@ -54,8 +54,8 @@ implementation:
           - torchvision==0.3.0
           - pandas==0.24.1
           - pyarrow==0.12.1
-          - scikit-plot=0.3.7
-          - matplotlib=2.2.2
+          - scikit-plot==0.3.7
+          - matplotlib==2.2.2
           - git+https://github.com/Bowen-Guo/azureml-custom-module-examples.git@master#subdirectory=ner-bert-module
     invoking:
       module: script.score

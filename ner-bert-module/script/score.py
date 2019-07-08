@@ -173,9 +173,9 @@ if __name__ == "__main__":
     parser = score_opts()
     args = parser.parse_args()
 
-    meta = {'No cuda': args.no_cuda,
-            'Local Rank': args.local_rank,
-            'Test Batch Size': args.test_batch_size}
+    meta = {'No cuda': str(args.no_cuda),
+            'Local Rank': str(args.local_rank),
+            'Test Batch Size': str(args.test_batch_size)}
     # Load features
     test_features = pd.read_parquet(os.path.join(args.test_feature_dir, "feature.parquet"), engine='pyarrow')
     test_features = test_features[0:10]

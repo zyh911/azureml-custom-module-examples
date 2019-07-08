@@ -289,9 +289,9 @@ def main():
     parser = preprocess_opts()
     args, _ = parser.parse_known_args()
 
-    meta = {'BERT pretrained model': args.bert_model,
-            'Do lower case': args.do_lower_case,
-            'Maximum sequence length': args.max_seq_length}
+    meta = {'BERT pretrained model': str(args.bert_model),
+            'Do lower case': str(args.do_lower_case),
+            'Maximum sequence length': str(args.max_seq_length)}
     input_data_frame = read_parquet(args.input_data_frame_path)
     preprocess_task = PreProcess(meta=meta)
     df_features = preprocess_task.run(input_data_frame)
