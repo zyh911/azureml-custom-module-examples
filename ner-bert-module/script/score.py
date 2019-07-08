@@ -177,7 +177,6 @@ if __name__ == "__main__":
             'Test Batch Size': str(args.test_batch_size)}
     # Load features
     test_features = pd.read_parquet(os.path.join(args.test_feature_dir, "feature.parquet"), engine='pyarrow')
-    test_features = test_features[0:10]
     ner_task = Ner(model_dir=args.trained_model_dir, meta=meta)
     df_pred = ner_task.run(test_features=test_features)
     ner_task.evaluation(df_pred=df_pred, test_features=test_features, output_eval_dir=args.output_eval_dir)
