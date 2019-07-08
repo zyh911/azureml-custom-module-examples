@@ -2,8 +2,10 @@ import numpy as np
 import pandas as pd
 import scikitplot as skplt
 import matplotlib.pyplot as plt
+import os
 from seqeval.metrics.sequence_labeling import get_entities
 from collections import defaultdict
+from azureml.core.run import Run
 
 
 def get_metrics(y_true, y_pred, suffix=False):
@@ -59,11 +61,14 @@ def convert_sentence_to_token(y_sentence):
     return y_tokens
 
 
-def plot(y_true, y_pred):
+def plot(y_true, y_pred, output_eval_dir):
+    run = Run.get_context()
     # Confusion matrix
     skplt.metrics.plot_confusion_matrix(convert_sentence_to_token(y_true),
                                         convert_sentence_to_token(y_pred), normalize=True)
-    plt.show()
+    run.log_image("metrics/confusion_matrix", plot=plt)
+    plt.savefig(os.path.join(output_eval_dir, 'confusion_matrix.png'))
+    # plt.show()
 
     # Metric
     df_metrics = get_metrics(y_true, y_pred)
@@ -74,7 +79,7 @@ def plot(y_true, y_pred):
     s = df_metrics['support'].tolist()
 
     # Metric F1-Score
-    plt.figure(2)
+    f1_plt = plt.figure(2)
     plt.title('F1-Score')
     plt.bar(range(len(type_name_list)), f1s, tick_label=type_name_list, fc='b')
     for x, y in zip(range(len(type_name_list)), f1s):
@@ -82,10 +87,12 @@ def plot(y_true, y_pred):
     plt.ylim([0, 1.1])
     plt.ylabel('F1-Score')
     plt.xlabel('Name Entity Type')
-    plt.show()
+    run.log_image("metrics/f1_score", plot=f1_plt)
+    f1_plt.savefig(os.path.join(output_eval_dir, 'f1_score.png'))
+    # plt.show()
 
     # Metric Precision
-    plt.figure(3)
+    precision_plt = plt.figure(3)
     plt.title('Precision')
     plt.bar(range(len(type_name_list)), ps, tick_label=type_name_list, fc='y')
     for x, y in zip(range(len(type_name_list)), ps):
@@ -93,10 +100,12 @@ def plot(y_true, y_pred):
     plt.ylim([0, 1.1])
     plt.ylabel('Precision')
     plt.xlabel('Name Entity Type')
-    plt.show()
+    run.log_image("metrics/precision", plot=precision_plt)
+    precision_plt.savefig(os.path.join(output_eval_dir, 'precision.png'))
+    # plt.show()
 
     # Metric Recall
-    plt.figure(4)
+    recall_plt = plt.figure(4)
     plt.title('Recall')
     plt.bar(range(len(type_name_list)), rs, tick_label=type_name_list, fc='y')
     for x, y in zip(range(len(type_name_list)), rs):
@@ -104,14 +113,18 @@ def plot(y_true, y_pred):
     plt.ylim([0, 1.1])
     plt.ylabel('Recall')
     plt.xlabel('Name Entity Type')
-    plt.show()
+    run.log_image("metrics/recall", plot=recall_plt)
+    recall_plt.savefig(os.path.join(output_eval_dir, 'recall.png'))
+    # plt.show()
 
     # Metric AllTrueInstanceCnt
-    plt.figure(5)
+    gt_plt = plt.figure(5)
     plt.title('AllTrueInstanceCnt')
     plt.bar(range(len(type_name_list)), s, tick_label=type_name_list, fc='g')
     for x, y in zip(range(len(type_name_list)), s):
         plt.text(x, y, "%d" % y, ha='center', va='bottom')
     plt.ylabel('AllTrueInstanceCnt')
     plt.xlabel('Name Entity Type')
-    plt.show()
+    run.log_image("metrics/ground_truth", plot=gt_plt)
+    gt_plt.savefig(os.path.join(output_eval_dir, 'ground_truth.png'))
+    # plt.show()

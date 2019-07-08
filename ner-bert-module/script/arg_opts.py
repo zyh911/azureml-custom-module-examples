@@ -136,7 +136,8 @@ def score_opts():
                         type=str,
                         help="The output directory where evaluation results will be written.")
     parser.add_argument("--no_cuda",
-                        action='store_true',
+                        default=False,
+                        type=bool,
                         help="Whether not to use CUDA when available")
     parser.add_argument("--local_rank",
                         default=-1,

@@ -268,9 +268,9 @@ def convert_examples_to_features_no_label(examples, max_seq_length, tokenizer):
 
 class PreProcess:
     def __init__(self, meta: dict = None):
-        self.bert_model = meta['BERT pretrained model']
-        self.do_lower_case = meta['Do lower case']
-        self.max_seq_length = meta['Maximum sequence length']
+        self.bert_model = str(meta['BERT pretrained model'])
+        self.do_lower_case = True if meta['Do lower case'] == 'True' else False
+        self.max_seq_length = int(meta['Maximum sequence length'])
         self.label_list = NerProcessor().get_labels()
 
     def run(self, input_data_frame: pd.DataFrame, meta: dict = None):

@@ -12,6 +12,21 @@ inputs:
   connectable: True
   default: ""
   description: input test data
+- name: No cuda
+  type: Boolean
+  connectable: False
+  default: False
+  description: Whether not to use CUDA when available
+- name: Local Rank
+  type: Int
+  connectable: False
+  default: -1
+  description: local_rank for distributed training on gpus
+- name: Test Batch Size
+  type: Int
+  connectable: False
+  default: 8
+  description: Total batch size for eval
 outputs:
 - name: Output evaluation results
   type: Dataset
@@ -39,6 +54,8 @@ implementation:
           - torchvision==0.3.0
           - pandas==0.24.1
           - pyarrow==0.12.1
+          - scikit-plot=0.3.7
+          - matplotlib=2.2.2
           - git+https://github.com/Bowen-Guo/azureml-custom-module-examples.git@master#subdirectory=ner-bert-module
     invoking:
       module: script.score
@@ -53,6 +70,12 @@ implementation:
     - inputValue: Trained model
     - --test_feature_dir
     - inputValue: Input test data
+    - --no_cuda
+    - inputValue: No cuda
+    - --local_rank
+    - inputValue: Local Rank
+    - --test_batch_size
+    - inputValue: Test Batch Size
     - --output_eval_dir
     - outputPath: Output evaluation results
 
