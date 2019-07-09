@@ -267,10 +267,10 @@ def convert_examples_to_features_no_label(examples, max_seq_length, tokenizer):
     return df_feature
 
 class PreProcess:
-    def __init__(self, meta: dict = None):
-        self.bert_model = str(meta['BERT pretrained model'])
-        self.do_lower_case = True if meta['Do lower case'] == 'True' else False
-        self.max_seq_length = int(meta['Maximum sequence length'])
+    def __init__(self, meta: dict = {}):
+        self.bert_model = str(meta.get('BERT pretrained model', 'bert-base-cased'))
+        self.do_lower_case = True if meta.get('Do lower case', 'False') == 'True' else False
+        self.max_seq_length = int(meta.get('Maximum sequence length', 128))
         self.label_list = NerProcessor().get_labels()
 
     def run(self, input_data_frame: pd.DataFrame, meta: dict = None):

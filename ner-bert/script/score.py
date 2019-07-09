@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 class Ner:
 
-    def __init__(self, model_dir: str, meta: dict = None):
-        self.no_cuda = True if meta['No cuda'] == 'True' else False
-        self.local_rank = int(meta['Local Rank'])
-        self.test_batch_size = int(meta['Test Batch Size'])
+    def __init__(self, model_dir: str, meta: dict = {}):
+        self.no_cuda = True if meta.get('No cuda', 'False') == 'True' else False
+        self.local_rank = int(meta.get('Local Rank', -1))
+        self.test_batch_size = int(meta.get('Test Batch Size', 8))
         self.model, self.model_config = self.load_model(model_dir)
         self.label_map = self.model_config["label_map"]
         self.max_seq_length = self.model_config["max_seq_length"]
