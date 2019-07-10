@@ -19,10 +19,13 @@ inputs:
     - bert-large-uncased
     - bert-large-cased
 - name: Do lower case
-  type: Boolean
+  type: Mode
   connectable: False
-  default: False
-  description: Set this flag if you are using an uncased model.
+  default: "False"
+  description: Set this flag if you are using an uncased model
+  options:
+    - "False"
+    - "True"
 - name: Maximum sequence length
   type: Int
   connectable: False

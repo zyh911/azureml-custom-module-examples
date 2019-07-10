@@ -29,8 +29,8 @@ def preprocess_opts():
                              "Sequences longer than this will be truncated, and sequences shorter \n"
                              "than this will be padded.")
     parser.add_argument("--do_lower_case",
-                        default=False,
-                        type=bool,
+                        default='False',
+                        type=str,
                         help="Set this flag if you are using an uncased model.")
 
     return parser
@@ -136,8 +136,8 @@ def score_opts():
                         type=str,
                         help="The output directory where evaluation results will be written.")
     parser.add_argument("--no_cuda",
-                        default=False,
-                        type=bool,
+                        default='False',
+                        type=str,
                         help="Whether not to use CUDA when available")
     parser.add_argument("--local_rank",
                         default=-1,

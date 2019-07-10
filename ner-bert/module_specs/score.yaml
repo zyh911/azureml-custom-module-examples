@@ -13,10 +13,13 @@ inputs:
   default: ""
   description: input test data
 - name: No cuda
-  type: Boolean
+  type: Mode
   connectable: False
-  default: False
+  default: "False"
   description: Whether not to use CUDA when available
+  options:
+    - "False"
+    - "True"
 - name: Local Rank
   type: Int
   connectable: False
