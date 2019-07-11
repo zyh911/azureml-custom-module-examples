@@ -3,24 +3,48 @@ import pandas as pd
 import scikitplot as skplt
 import matplotlib.pyplot as plt
 import os
+import json
 from seqeval.metrics.sequence_labeling import get_entities
 from collections import defaultdict
 from azureml.core.run import Run
 
 
-def get_metrics(y_true, y_pred, suffix=False):
+def serialize_result(raw_text_list, y_list):
+    result_list = []
+    for i, y in enumerate(y_list):
+        text_list = raw_text_list[i].split(' ')
+        entities = get_entities(y)
+        result = []
+        for e in entities:
+            start_index = e[1]
+            end_index = e[2] + 1
+            entity_name = ' '.join(text_list[start_index: end_index])
+            entity_label = e[0]
+            result.append(tuple((entity_name, entity_label)))
+        result_json = json.dumps({name: {"tag": label} for (name, label) in result})
+        result_list.append(result_json)
+    return pd.DataFrame({'Text': raw_text_list, 'PredictedLabel': result_list})
 
-    true_entities = set(get_entities(y_true, suffix))
-    pred_entities = set(get_entities(y_pred, suffix))
 
+def deserialize_result(result_list):
+    entities = set()
+    for result in result_list:
+        result_dict = json.loads(result)
+        for name in result_dict:
+            entities.add(tuple((result_dict[name]["tag"], name)))
+    return entities
+
+
+
+def get_metrics(true_entities, pred_entities):
     name_width = 0
     d1 = defaultdict(set)
     d2 = defaultdict(set)
     for e in true_entities:
-        d1[e[0]].add((e[1], e[2]))
+        d1[e[0]].add((e[1]))
         name_width = max(name_width, len(e[0]))
     for e in pred_entities:
-        d2[e[0]].add((e[1], e[2]))
+        d2[e[0]].add((e[1]))
 
     type_name_list = []
     ps, rs, f1s, s = [], [], [], []
@@ -63,12 +87,12 @@ def convert_sentence_to_token(y_sentence):
 
 def plot(y_true, y_pred, output_eval_dir):
     run = Run.get_context()
-    # Confusion matrix
-    skplt.metrics.plot_confusion_matrix(convert_sentence_to_token(y_true),
-                                        convert_sentence_to_token(y_pred), normalize=True)
-    run.log_image("metrics/confusion_matrix", plot=plt)
-    plt.savefig(os.path.join(output_eval_dir, 'confusion_matrix.png'))
-    # plt.show()
+    # # Confusion matrix
+    # skplt.metrics.plot_confusion_matrix(convert_sentence_to_token(y_true),
+    #                                     convert_sentence_to_token(y_pred), normalize=True)
+    # run.log_image("metrics/confusion_matrix", plot=plt)
+    # plt.savefig(os.path.join(output_eval_dir, 'confusion_matrix.png'))
+    # # plt.show()
 
     # Metric
     df_metrics = get_metrics(y_true, y_pred)

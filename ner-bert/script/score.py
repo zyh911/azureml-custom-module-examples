@@ -14,7 +14,7 @@ from seqeval.metrics import classification_report
 from torch.utils.data import (DataLoader, SequentialSampler, TensorDataset)
 from tqdm import tqdm
 from .arg_opts import score_opts
-from .utils import plot
+from .utils import plot, serialize_result, deserialize_result
 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -106,7 +106,8 @@ class Ner:
                         break
                 y_pred.append(temp_2)
         assert len(y_pred) == len(raw_text_list)
-        df_pred = pd.DataFrame({'Text': raw_text_list, 'PredictedLabel': [' '.join(pred_label) for pred_label in y_pred]})
+        df_pred = serialize_result(raw_text_list, y_pred)
+        print(df_pred)        
         return df_pred
 
     def evaluation(self, df_pred: pd.DataFrame, test_features: pd.DataFrame, output_eval_dir):
@@ -129,16 +130,16 @@ class Ner:
             test_sampler = SequentialSampler(test_data)
             test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=self.test_batch_size)
 
-            y_pred = []
             text = df_pred["Text"].tolist()
             predicted_label = df_pred['PredictedLabel'].tolist()
-            for i, pred_label in enumerate(predicted_label):
-                pred_label = pred_label.strip()
-                if pred_label != '':
-                    y_pred.append(pred_label.split(' '))
-                else:
-                    y_pred.append([])
-                    print("No predicted label. raw_text", text[i])
+            pred_entities = deserialize_result(predicted_label)
+            # for i, pred_label in enumerate(predicted_label):
+            #     pred_label = pred_label.strip()
+            #     if pred_label != '':
+            #         y_pred.append(pred_label.split(' '))
+            #     else:
+            #         y_pred.append([])
+            #         print("No predicted label. raw_text", text[i])
 
             y_true = []
             for input_mask, label_ids in tqdm(test_dataloader, desc="Evaluating"):
@@ -158,14 +159,14 @@ class Ner:
                             temp_1.pop()
                             break
                     y_true.append(temp_1)
+            true_entities = deserialize_result(serialize_result(text, y_true)['PredictedLabel'].tolist())
             # Plot
-            plot(y_true, y_pred, output_eval_dir)
-
-            report = classification_report(y_true, y_pred, digits=4)
-            output_eval_file = os.path.join(output_eval_dir, "eval_results.txt")
-            with open(output_eval_file, "w") as writer:
-                logger.info("\n%s", report)
-                writer.write(report)
+            plot(true_entities, pred_entities, output_eval_dir)
+            # report = classification_report(y_true, y_pred, digits=4)
+            # output_eval_file = os.path.join(output_eval_dir, "eval_results.txt")
+            # with open(output_eval_file, "w") as writer:
+            #     logger.info("\n%s", report)
+            #     writer.write(report)
 
 
 if __name__ == "__main__":
