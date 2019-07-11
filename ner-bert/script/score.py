@@ -164,7 +164,7 @@ class Ner:
                 y_pred.append(temp_2)
         assert len(y_pred) == len(raw_text_list)
         df_pred = serialize_result(raw_text_list, y_pred)
-        logger.info(df_pred)
+        print(df_pred)
         # Output prediction results
         save_as_df(df_pred, self.output_eval_dir)
         # Plot
