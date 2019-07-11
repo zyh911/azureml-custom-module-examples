@@ -34,17 +34,22 @@ def deserialize_result(result_list):
             entities.add(tuple((result_dict[name]["tag"], name)))
     return entities
 
+def save_as_df(output_df, output_eval_dir):
+    if not os.path.exists(output_eval_dir):
+        os.makedirs(output_eval_dir)
+    output_df.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
 
-
-def get_metrics(true_entities, pred_entities):
+def get_metrics(y_true, y_pred, suffix=False):
+    true_entities = set(get_entities(y_true, suffix))
+    pred_entities = set(get_entities(y_pred, suffix))
     name_width = 0
     d1 = defaultdict(set)
     d2 = defaultdict(set)
     for e in true_entities:
-        d1[e[0]].add((e[1]))
+        d1[e[0]].add((e[1], e[2]))
         name_width = max(name_width, len(e[0]))
     for e in pred_entities:
-        d2[e[0]].add((e[1]))
+        d2[e[0]].add((e[1], e[2]))
 
     type_name_list = []
     ps, rs, f1s, s = [], [], [], []

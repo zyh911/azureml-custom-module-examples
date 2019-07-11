@@ -14,7 +14,7 @@ from seqeval.metrics import classification_report
 from torch.utils.data import (DataLoader, SequentialSampler, TensorDataset)
 from tqdm import tqdm
 from .arg_opts import score_opts
-from .utils import plot, serialize_result, deserialize_result
+from .utils import plot, serialize_result, save_as_df
 
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -31,6 +31,7 @@ class Ner:
         self.no_cuda = True if meta.get('No cuda', 'False') == 'True' else False
         self.local_rank = int(meta.get('Local Rank', -1))
         self.test_batch_size = int(meta.get('Test Batch Size', 8))
+        self.output_eval_dir = meta.get('Output evaluation results', '')
         self.model, self.model_config = self.load_model(model_dir)
         self.label_map = self.model_config["label_map"]
         self.max_seq_length = self.model_config["max_seq_length"]
@@ -107,66 +108,72 @@ class Ner:
                 y_pred.append(temp_2)
         assert len(y_pred) == len(raw_text_list)
         df_pred = serialize_result(raw_text_list, y_pred)
-        print(df_pred)        
+        print(df_pred)
+        # Output prediction results
+        save_as_df(df_pred, self.output_eval_dir)         
         return df_pred
 
-    def evaluation(self, df_pred: pd.DataFrame, test_features: pd.DataFrame, output_eval_dir):
-        if not os.path.exists(output_eval_dir):
-            os.makedirs(output_eval_dir)
+    def evaluation(self, test_features: pd.DataFrame):
         # Load features
-        header_names = set(list(test_features.columns.values))
-        df_pred.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
+        raw_text_list = test_features['raw_text'].tolist()
+        input_ids_list = test_features['input_ids'].tolist()
+        input_mask_list = test_features['input_mask'].tolist()
+        segment_ids_list = test_features['segment_ids'].tolist()
+        label_ids_list = test_features['label_ids'].tolist()
 
-        if "label_ids" in header_names:
-            input_mask_list = test_features['input_mask'].tolist()
-            label_ids_list = test_features['label_ids'].tolist()
-            logger.info("***** Running evaluation *****")
-            logger.info("  Num examples = %d", len(test_features))
-            logger.info("  Batch size = %d", self.test_batch_size)
-            all_input_mask = torch.tensor(input_mask_list, dtype=torch.long)
-            all_label_ids = torch.tensor(label_ids_list, dtype=torch.long)
-            test_data = TensorDataset(all_input_mask, all_label_ids)
-            # Run prediction for test data
-            test_sampler = SequentialSampler(test_data)
-            test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=self.test_batch_size)
+        logger.info("***** Running evaluation *****")
+        logger.info("  Num examples = %d", len(test_features))
+        logger.info("  Batch size = %d", self.test_batch_size)
+        all_input_ids = torch.tensor(input_ids_list, dtype=torch.long)
+        all_input_mask = torch.tensor(input_mask_list, dtype=torch.long)
+        all_segment_ids = torch.tensor(segment_ids_list, dtype=torch.long)
+        all_label_ids = torch.tensor(label_ids_list, dtype=torch.long)
 
-            text = df_pred["Text"].tolist()
-            predicted_label = df_pred['PredictedLabel'].tolist()
-            pred_entities = deserialize_result(predicted_label)
-            # for i, pred_label in enumerate(predicted_label):
-            #     pred_label = pred_label.strip()
-            #     if pred_label != '':
-            #         y_pred.append(pred_label.split(' '))
-            #     else:
-            #         y_pred.append([])
-            #         print("No predicted label. raw_text", text[i])
+        test_data = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids)
+        # Run prediction for test data
+        test_sampler = SequentialSampler(test_data)
+        test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=self.test_batch_size)
 
-            y_true = []
-            for input_mask, label_ids in tqdm(test_dataloader, desc="Evaluating"):
-                input_mask = input_mask.to(self.device)
-                label_ids = label_ids.to(self.device)
-                label_ids = label_ids.to('cpu').numpy()
-                input_mask = input_mask.to('cpu').numpy()
-                for i, mask in enumerate(input_mask):
-                    temp_1 = []
-                    for j, m in enumerate(mask):
-                        if (j == 0) or (j == len(mask) - 1):
-                            continue
-                        if m:
-                            if self.label_map[label_ids[i][j]] != "X":
-                                temp_1.append(self.label_map[label_ids[i][j]])
-                        else:
-                            temp_1.pop()
-                            break
-                    y_true.append(temp_1)
-            true_entities = deserialize_result(serialize_result(text, y_true)['PredictedLabel'].tolist())
-            # Plot
-            plot(true_entities, pred_entities, output_eval_dir)
-            # report = classification_report(y_true, y_pred, digits=4)
-            # output_eval_file = os.path.join(output_eval_dir, "eval_results.txt")
-            # with open(output_eval_file, "w") as writer:
-            #     logger.info("\n%s", report)
-            #     writer.write(report)
+        y_pred = []
+        y_true = []
+        for input_ids, input_mask, segment_ids, label_ids in tqdm(test_dataloader, desc="Evaluating"):
+            input_ids = input_ids.to(self.device)
+            input_mask = input_mask.to(self.device)
+            segment_ids = segment_ids.to(self.device)
+            with torch.no_grad():
+                logits = self.model(input_ids, segment_ids, input_mask)
+            logits = torch.argmax(F.log_softmax(logits, dim=2), dim=2)
+            logits = logits.detach().cpu().numpy()
+            input_mask = input_mask.to(self.device).numpy()
+            label_ids = label_ids.to(self.device).numpy()
+            for i, mask in enumerate(input_mask):
+                temp_1 = []
+                temp_2 = []
+                for j, m in enumerate(mask):
+                    if (j == 0) or (j == len(mask) - 1):
+                        continue
+                    if m:
+                        if self.label_map[label_ids[i][j]] != "X":
+                            temp_1.append(self.label_map[label_ids[i][j]])
+                            temp_2.append(self.label_map[logits[i][j]])
+                    else:
+                        temp_1.pop()
+                        temp_2.pop()
+                        break
+                y_true.append(temp_1)
+                y_pred.append(temp_2)
+        assert len(y_pred) == len(raw_text_list)
+        df_pred = serialize_result(raw_text_list, y_pred)
+        logger.info(df_pred)
+        # Output prediction results
+        save_as_df(df_pred, self.output_eval_dir)
+        # Plot
+        plot(y_true, y_pred, self.output_eval_dir)
+        report = classification_report(y_true, y_pred, digits=4)
+        output_eval_file = os.path.join(self.output_eval_dir, "eval_results.txt")
+        with open(output_eval_file, "w") as writer:
+            logger.info("\n%s", report)
+            writer.write(report)
 
 
 if __name__ == "__main__":
@@ -175,12 +182,16 @@ if __name__ == "__main__":
 
     meta = {'No cuda': str(args.no_cuda),
             'Local Rank': str(args.local_rank),
-            'Test Batch Size': str(args.test_batch_size)}
+            'Test Batch Size': str(args.test_batch_size),
+            'Output evaluation results': str(args.output_eval_dir)}
     # Load features
     test_features = pd.read_parquet(os.path.join(args.test_feature_dir, "feature.parquet"), engine='pyarrow')
+    header_names = set(list(test_features.columns.values))
     ner_task = Ner(model_dir=args.trained_model_dir, meta=meta)
-    df_pred = ner_task.run(test_features=test_features)
-    ner_task.evaluation(df_pred=df_pred, test_features=test_features, output_eval_dir=args.output_eval_dir)
+    if "label_ids" not in header_names:
+        ner_task.run(test_features=test_features)
+    else:
+        ner_task.evaluation(test_features=test_features)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
