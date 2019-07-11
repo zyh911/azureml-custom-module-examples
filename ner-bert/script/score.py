@@ -144,8 +144,8 @@ class Ner:
                 logits = self.model(input_ids, segment_ids, input_mask)
             logits = torch.argmax(F.log_softmax(logits, dim=2), dim=2)
             logits = logits.detach().cpu().numpy()
-            input_mask = input_mask.to(self.device).numpy()
-            label_ids = label_ids.to(self.device).numpy()
+            input_mask = input_mask.to('cpu').numpy()
+            label_ids = label_ids.to('cpu').numpy()
             for i, mask in enumerate(input_mask):
                 temp_1 = []
                 temp_2 = []
