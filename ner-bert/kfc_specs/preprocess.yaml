@@ -3,7 +3,6 @@ description: NER Preprocess module
 inputs:
 - name: Input data
   type: TabularDataFolder
-  default: ""
   description: input data frame
 - name: BERT pretrained model
   type: String

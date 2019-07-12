@@ -6,7 +6,6 @@ inputs:
 - name: Input train data
   type: TabularDataFolder
   port: True
-  default: ""
   description: input train data
 - name: BERT pretrained model
   type: Mode

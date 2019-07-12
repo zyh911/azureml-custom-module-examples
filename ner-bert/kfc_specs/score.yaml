@@ -6,7 +6,6 @@ inputs:
   description: Trained model folder
 - name: Input test data
   type: TabularDataFolder
-  default: ""
   description: input test data
 - name: No cuda
   type: Boolean

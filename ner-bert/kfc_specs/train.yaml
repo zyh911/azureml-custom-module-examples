@@ -3,7 +3,6 @@ description: NER train module
 inputs:
 - name: Input train data
   type: TabularDataFolder
-  default: ""
   description: input train data
 - name: BERT pretrained model
   type: String

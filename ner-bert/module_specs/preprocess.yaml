@@ -6,7 +6,6 @@ inputs:
 - name: Input data
   type: TabularDataFolder
   port: True
-  default: ""
   description: input data frame
 - name: BERT pretrained model
   type: String

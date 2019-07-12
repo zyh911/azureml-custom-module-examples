@@ -10,7 +10,6 @@ inputs:
 - name: Input test data
   type: TabularDataFolder
   port: True
-  default: ""
   description: input test data
 - name: No cuda
   type: Boolean
