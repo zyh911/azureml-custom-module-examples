@@ -35,9 +35,10 @@ def deserialize_result(result_list):
     return entities
 
 def save_as_df(output_df, output_eval_dir):
-    if not os.path.exists(output_eval_dir):
-        os.makedirs(output_eval_dir)
-    output_df.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
+    if output_eval_dir != '':
+        if not os.path.exists(output_eval_dir):
+            os.makedirs(output_eval_dir)
+        output_df.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
 
 def get_metrics(y_true, y_pred, suffix=False):
     true_entities = set(get_entities(y_true, suffix))

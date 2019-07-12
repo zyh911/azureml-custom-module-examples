@@ -109,8 +109,6 @@ class Ner:
         assert len(y_pred) == len(raw_text_list)
         df_pred = serialize_result(raw_text_list, y_pred)
         print(df_pred)
-        # Output prediction results
-        save_as_df(df_pred, self.output_eval_dir)         
         return df_pred
 
     def evaluation(self, test_features: pd.DataFrame):
@@ -189,7 +187,9 @@ if __name__ == "__main__":
     header_names = set(list(test_features.columns.values))
     ner_task = Ner(model_dir=args.trained_model_dir, meta=meta)
     if "label_ids" not in header_names:
-        ner_task.run(test_features=test_features)
+        df_pred = ner_task.run(test_features=test_features)
+        # Output prediction results
+        save_as_df(df_pred, ner_task.output_eval_dir)
     else:
         ner_task.evaluation(test_features=test_features)
 
