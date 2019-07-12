@@ -4,7 +4,7 @@ category: Machine Learning\Train
 description: NER train module
 inputs:
 - name: Input train data
-  type: TabluarDataFolder
+  type: TabularDataFolder
   port: True
   default: ""
   description: input train data

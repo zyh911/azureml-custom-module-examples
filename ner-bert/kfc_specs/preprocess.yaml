@@ -2,7 +2,7 @@ name: NER Preprocess
 description: NER Preprocess module
 inputs:
 - name: Input data
-  type: TabluarDataFolder
+  type: TabularDataFolder
   default: ""
   description: input data frame
 - name: BERT pretrained model
@@ -19,7 +19,7 @@ inputs:
   description: Specify maximum sequence length
 outputs:
 - name: Output feature
-  type: TabluarDataFolder
+  type: TabularDataFolder
   description: The output feature
 implementation:
   container:

@@ -8,7 +8,7 @@ inputs:
   port: True
   description: Trained model folder
 - name: Input test data
-  type: TabluarDataFolder
+  type: TabularDataFolder
   port: True
   default: ""
   description: input test data
@@ -29,7 +29,7 @@ inputs:
   description: Total batch size for eval
 outputs:
 - name: Output evaluation results
-  type: TabluarDataFolder
+  type: TabularDataFolder
   port: False
   description: The output directory where prediction and evaluation results will be written.
 implementation:

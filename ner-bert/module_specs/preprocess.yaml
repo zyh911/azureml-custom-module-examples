@@ -4,7 +4,7 @@ category: Machine Learning\Preprocess
 description: NER Preprocess module
 inputs:
 - name: Input data
-  type: TabluarDataFolder
+  type: TabularDataFolder
   port: True
   default: ""
   description: input data frame
@@ -30,7 +30,7 @@ inputs:
   description: Specify maximum sequence length
 outputs:
 - name: Output feature
-  type: TabluarDataFolder
+  type: TabularDataFolder
   port: True
   description: The output feature
 implementation:
