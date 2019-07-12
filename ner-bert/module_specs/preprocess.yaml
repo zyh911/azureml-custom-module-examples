@@ -4,13 +4,13 @@ category: Machine Learning\Preprocess
 description: NER Preprocess module
 inputs:
 - name: Input data
-  type: Dataset
-  connectable: True
+  type: TabluarDataFolder
+  port: True
   default: ""
   description: input data frame
 - name: BERT pretrained model
-  type: Mode
-  connectable: False
+  type: String
+  port: False
   default: "bert-base-cased"
   description: Specify BERT pretrained model
   options:
@@ -19,26 +19,23 @@ inputs:
     - bert-large-uncased
     - bert-large-cased
 - name: Do lower case
-  type: Mode
-  connectable: False
-  default: "False"
-  description: Set this flag if you are using an uncased model
-  options:
-    - "False"
-    - "True"
+  type: Boolean
+  port: False
+  default: False
+  description: Set this flag if you are using an uncased model.
 - name: Maximum sequence length
   type: Int
-  connectable: False
+  port: False
   default: 128
   description: Specify maximum sequence length
 outputs:
 - name: Output feature
-  type: Dataset
-  connectable: True
+  type: TabluarDataFolder
+  port: True
   description: The output feature
 implementation:
   container:
-    meta:
+    runConfig:
       baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
       gpuSupport: true  
     conda:

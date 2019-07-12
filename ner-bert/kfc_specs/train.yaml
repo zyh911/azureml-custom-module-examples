@@ -1,67 +1,34 @@
 name: NER Train
-id: 35ff6570-c9af-4304-a57a-2b63ba216396
-category: Machine Learning\Train
 description: NER train module
 inputs:
 - name: Input train data
   type: TabluarDataFolder
-  port: True
   default: ""
   description: input train data
 - name: BERT pretrained model
-  type: Mode
-  port: False
+  type: String
   default: "bert-base-cased"
   description: Specify BERT pretrained model
-  options:
-    - bert-base-uncased
-    - bert-base-cased
-    - bert-large-uncased
-    - bert-large-cased
 - name: Maximum sequence length
   type: Int
-  port: False
   default: 128
   description: Specify maximum sequence length
 - name: Number of training epochs
   type: Int
-  port: False
   default: 5
   description: Specify number of training epochs
     training
 - name: Warmup proportion
   type: Float
-  port: False
   default: 0.4
   description: Specify warmup proportion
 outputs:
 - name: Output model
   type: ModelFolder
-  port: True
   description: The output directory where the model predictions and checkpoints will be written.
 implementation:
   container:
-    runConfig:
-      baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
-      gpuSupport: true
-    conda:
-      content:
-        name: project_environment
-        channels:
-        - defaults
-        dependencies:
-        - python=3.6.2
-        - pip:
-          - --extra-index-url=https://test.pypi.org/simple
-          - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-          - pytorch-pretrained-bert==0.6.1
-          - seqeval==0.0.5
-          - tqdm==4.31.1
-          - nltk==3.4
-          - torchvision==0.3.0
-          - pandas==0.24.1
-          - pyarrow==0.12.1
-          - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
+    image: mycorp/my-docker-image
     command:
     - python
     - -m
