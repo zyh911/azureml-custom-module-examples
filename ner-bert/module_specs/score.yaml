@@ -36,7 +36,7 @@ implementation:
   container:
     runConfig:
       baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
-      gpuSupport: true    
+      gpuSupport: True    
     conda:
       content:
         name: project_environment
@@ -59,10 +59,6 @@ implementation:
           - scikit-plot==0.3.7
           - matplotlib==3.1.0
           - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
-    invoking:
-      module: script.score
-      class: Ner
-      func:
     command:
     - python
     - -m
@@ -80,4 +76,7 @@ implementation:
     - inputValue: Test Batch Size
     - --output_eval_dir
     - outputPath: Output evaluation results
-
+  invoking:
+    module: script.score
+    class: Ner
+    func:    

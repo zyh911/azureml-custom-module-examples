@@ -37,7 +37,7 @@ implementation:
   container:
     runConfig:
       baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
-      gpuSupport: true  
+      gpuSupport: True  
     conda:
       content:
         name: project_environment
@@ -56,10 +56,6 @@ implementation:
           - pandas==0.24.1
           - pyarrow==0.12.1
           - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
-    invoking:
-      module: script.preprocess
-      class: PreProcess
-      func:
     command:
     - python
     - -m
@@ -75,3 +71,7 @@ implementation:
     - inputValue: Maximum sequence length
     - --output_feature_dir
     - outputPath: Output feature
+  invoking:
+    module: script.preprocess
+    class: PreProcess
+    func:
