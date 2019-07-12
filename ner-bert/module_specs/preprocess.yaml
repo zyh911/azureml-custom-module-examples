@@ -10,7 +10,6 @@ inputs:
   description: input data frame
 - name: BERT pretrained model
   type: String
-  port: False
   default: "bert-base-cased"
   description: Specify BERT pretrained model
   options:
@@ -20,18 +19,15 @@ inputs:
     - bert-large-cased
 - name: Do lower case
   type: Boolean
-  port: False
   default: False
   description: Set this flag if you are using an uncased model.
 - name: Maximum sequence length
   type: Int
-  port: False
   default: 128
   description: Specify maximum sequence length
 outputs:
 - name: Output feature
   type: TabularDataFolder
-  port: True
   description: The output feature
 implementation:
   container:
@@ -39,23 +35,22 @@ implementation:
       baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
       gpuSupport: True  
     conda:
-      content:
-        name: project_environment
-        channels:
-        - defaults
-        dependencies:
-        - python=3.6.2
-        - pip:
-          - --extra-index-url=https://test.pypi.org/simple
-          - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
-          - pytorch-pretrained-bert==0.6.1
-          - seqeval==0.0.5
-          - tqdm==4.31.1
-          - nltk==3.4
-          - torchvision==0.3.0
-          - pandas==0.24.1
-          - pyarrow==0.12.1
-          - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
+      name: project_environment
+      channels:
+      - defaults
+      dependencies:
+      - python=3.6.2
+      - pip:
+        - --extra-index-url=https://test.pypi.org/simple
+        - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+        - pytorch-pretrained-bert==0.6.1
+        - seqeval==0.0.5
+        - tqdm==4.31.1
+        - nltk==3.4
+        - torchvision==0.3.0
+        - pandas==0.24.1
+        - pyarrow==0.12.1
+        - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
     command:
     - python
     - -m
@@ -74,4 +69,4 @@ implementation:
   invoking:
     module: script.preprocess
     class: PreProcess
-    func:
+    func: run
