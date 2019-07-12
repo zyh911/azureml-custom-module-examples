@@ -21,8 +21,9 @@ def serialize_result(raw_text_list, y_list):
             entity_name = ' '.join(text_list[start_index: end_index])
             entity_label = e[0]
             result.append(tuple((entity_name, entity_label)))
-        result_json = json.dumps({name: {"tag": label} for (name, label) in result})
-        result_list.append(result_json)
+        result_dict = {name: {"tag": label} for (name, label) in result}
+        # result_json = json.dumps({name: {"tag": label} for (name, label) in result})
+        result_list.append(result_dict)
     return pd.DataFrame({'Text': raw_text_list, 'PredictedLabel': result_list})
 
 
@@ -34,11 +35,16 @@ def deserialize_result(result_list):
             entities.add(tuple((result_dict[name]["tag"], name)))
     return entities
 
+
 def save_as_df(output_df, output_eval_dir):
     if output_eval_dir != '':
         if not os.path.exists(output_eval_dir):
             os.makedirs(output_eval_dir)
-        output_df.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
+        pred_label_list = output_df['PredictedLabel'].tolist()
+        final_df = pd.DataFrame({'Text': output_df['Text'].tolist(), 'PredictedLabel': [json.dumps(p_dict) for p_dict in pred_label_list]})
+        print(final_df)
+        final_df.to_parquet(fname=os.path.join(output_eval_dir, "prediction.parquet"), engine='pyarrow')
+        
 
 def get_metrics(y_true, y_pred, suffix=False):
     true_entities = set(get_entities(y_true, suffix))
