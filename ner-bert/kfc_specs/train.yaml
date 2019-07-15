@@ -1,0 +1,47 @@
+name: NER Train
+description: NER train module
+inputs:
+- name: Input train data
+  type: TabularDataFolder
+  description: input train data
+- name: BERT pretrained model
+  type: String
+  default: "bert-base-cased"
+  description: Specify BERT pretrained model
+- name: Maximum sequence length
+  type: Int
+  default: 128
+  description: Specify maximum sequence length
+- name: Number of training epochs
+  type: Int
+  default: 5
+  description: Specify number of training epochs
+    training
+- name: Warmup proportion
+  type: Float
+  default: 0.4
+  description: Specify warmup proportion
+outputs:
+- name: Output model
+  type: ModelFolder
+  description: The output directory where the model predictions and checkpoints will be written.
+implementation:
+  container:
+    image: mycorp/my-docker-image
+    command:
+    - python
+    - -m
+    - script.train
+    args:
+    - --train_feature_dir
+    - inputValue: Input train data
+    - --bert_model
+    - inputValue: BERT pretrained model
+    - --max_seq_length
+    - inputValue: Maximum sequence length
+    - --num_train_epochs
+    - inputValue: Number of training epochs
+    - --warmup_proportion
+    - inputValue: Warmup proportion
+    - --output_model_dir
+    - outputPath: Output model

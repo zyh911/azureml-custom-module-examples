@@ -1,0 +1,71 @@
+name: NER Preprocess
+id: 90393344-7e12-4179-927d-2d318cf416cb
+category: Machine Learning\Preprocess
+description: NER Preprocess module
+inputs:
+- name: Input data
+  type: TabularDataFolder
+  port: True
+  description: input data frame
+- name: BERT pretrained model
+  type: String
+  default: "bert-base-cased"
+  description: Specify BERT pretrained model
+  options:
+    - bert-base-uncased
+    - bert-base-cased
+    - bert-large-uncased
+    - bert-large-cased
+- name: Do lower case
+  type: Boolean
+  default: False
+  description: Set this flag if you are using an uncased model.
+- name: Maximum sequence length
+  type: Int
+  default: 128
+  description: Specify maximum sequence length
+outputs:
+- name: Output feature
+  type: TabularDataFolder
+  description: The output feature
+implementation:
+  container:
+    runConfig:
+      baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
+      gpuSupport: True  
+    conda:
+      name: project_environment
+      channels:
+      - defaults
+      dependencies:
+      - python=3.6.2
+      - pip:
+        - --extra-index-url=https://test.pypi.org/simple
+        - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+        - pytorch-pretrained-bert==0.6.1
+        - seqeval==0.0.5
+        - tqdm==4.31.1
+        - nltk==3.4
+        - torchvision==0.3.0
+        - pandas==0.24.1
+        - pyarrow==0.12.1
+        - git+https://github.com/chjinche/azureml-custom-module-examples.git@master#subdirectory=ner-bert
+    command:
+    - python
+    - -m
+    - script.preprocess
+    args:
+    - --input_data_frame_path
+    - inputValue: Input data
+    - --bert_model
+    - inputValue: BERT pretrained model
+    - --do_lower_case
+    - inputValue: Do lower case
+    - --max_seq_length
+    - inputValue: Maximum sequence length
+    - --output_feature_dir
+    - outputPath: Output feature
+  invoking:
+    module: script.preprocess
+    class: PreProcess
+    func: run

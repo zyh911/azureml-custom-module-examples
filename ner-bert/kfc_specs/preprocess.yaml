@@ -1,0 +1,40 @@
+name: NER Preprocess
+description: NER Preprocess module
+inputs:
+- name: Input data
+  type: TabularDataFolder
+  description: input data frame
+- name: BERT pretrained model
+  type: String
+  default: "bert-base-cased"
+  description: Specify BERT pretrained model
+- name: Do lower case
+  type: Boolean
+  default: False
+  description: Set this flag if you are using an uncased model.
+- name: Maximum sequence length
+  type: Int
+  default: 128
+  description: Specify maximum sequence length
+outputs:
+- name: Output feature
+  type: TabularDataFolder
+  description: The output feature
+implementation:
+  container:
+    image: mycorp/my-docker-image
+    command:
+    - python
+    - -m
+    - script.preprocess
+    args:
+    - --input_data_frame_path
+    - inputValue: Input data
+    - --bert_model
+    - inputValue: BERT pretrained model
+    - --do_lower_case
+    - inputValue: Do lower case
+    - --max_seq_length
+    - inputValue: Maximum sequence length
+    - --output_feature_dir
+    - outputPath: Output feature
