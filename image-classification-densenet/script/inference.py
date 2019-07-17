@@ -5,7 +5,7 @@ from torchvision import transforms
 from PIL import Image
 
 import torch.nn as nn
-from .models import DenseNet
+from .densenet import DenseNet
 
 
 def inference(model_path, data_path='test_data', save_path='outputs'):
