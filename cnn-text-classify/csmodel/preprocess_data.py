@@ -17,18 +17,28 @@ class DataPreprocessor(object):
         self.cut = word_tokenize
         with open(self.vocab_path + '/' + 'word2id.pkl', 'rb') as f:
             self.word2id = pickle.load(f)
-        # with open(self.vocab_path + '/' + 'id2label.pkl', 'rb') as f:
-        #     self.id2label = pickle.load(f)
 
     def process(self, data_frame: pd.DataFrame):
+        headers = data_frame.columns.values.tolist()
+
         word_id_list = []
-        label_list = []
-        for index, row in data_frame.iterrows():
-            text = word_tokenize(row['text'])
-            text_id = [self.word2id[word] if word != '\x00' and word in self.word2id else 0 for word in text]
-            word_id_list.append(text_id)
-            label_list.append(row['label'])
-        return pd.DataFrame({'label': label_list, 'text_id': word_id_list})
+        text_list = []
+        if 'label' in headers:
+            label_list = []
+            for index, row in data_frame.iterrows():
+                text = word_tokenize(row['text'])
+                text_id = [self.word2id[word] if word != '\x00' and word in self.word2id else 0 for word in text]
+                text_list.append(row['text'])
+                word_id_list.append(text_id)
+                label_list.append(row['label'])
+            return pd.DataFrame({'label': label_list, 'text_id': word_id_list, 'text': text_list})
+        else:
+            for index, row in data_frame.iterrows():
+                text = word_tokenize(row['text'])
+                text_id = [self.word2id[word] if word != '\x00' and word in self.word2id else 0 for word in text]
+                text_list.append(row['text'])
+                word_id_list.append(text_id)
+            return pd.DataFrame({'text_id': word_id_list, 'text': text_list})
 
 
 if __name__ == '__main__':
@@ -62,4 +72,3 @@ if __name__ == '__main__':
     }
     with open(os.path.join(args.output_data, 'data_type.json'), 'w') as f:
         json.dump(dct, f)
-
