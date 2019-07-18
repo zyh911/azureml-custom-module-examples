@@ -211,7 +211,7 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    train_set = datasets.CIFAR10(data_path, train=True, transform=train_transforms, download=True)
+    train_set = datasets.CIFAR10(data_path, train=True, transform=train_transforms, download=False)
     test_set = datasets.CIFAR10(data_path, train=False, transform=test_transforms, download=False)
 
     if valid_size:
