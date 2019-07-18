@@ -132,4 +132,4 @@ def test(model_path='models', data_path='dataset', save_path='outputs', print_fr
 
 
 if __name__ == '__main__':
-    fire.Fire(test)
+    fire.Fire(inference)
