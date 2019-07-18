@@ -8,8 +8,8 @@ inputs:
   port: True
   description: model_path
 - name: Data path
-  Type: Str
-  default: 'test_data'
+  type: GenericFolder
+  port: True
   description: data_path
 outputs:
 - name: Save path
