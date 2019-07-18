@@ -4,8 +4,8 @@ category: Machine Learning\Train
 description: Creates a DenseNet for image classification and trains it
 inputs:
 - name: Data path
-  type: Str
-  default: 'dataset'
+  type: GenericFolder
+  port: True
   description: data_path
 - name: Model depth
   type: Int
