@@ -13,6 +13,7 @@ inputs:
   description: data_path
 outputs:
 - name: Save path
+  type: GenericFolder
   description: save_path
 implementation:
   container:
