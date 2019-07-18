@@ -16,7 +16,7 @@ def inference(model_path, data_path='test_data', save_path='outputs'):
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=stdv),
     ])
-
+    print(os.getcwd())
     model = DenseNet()
     model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth')))
     if torch.cuda.is_available():
