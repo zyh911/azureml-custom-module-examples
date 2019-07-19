@@ -35,7 +35,7 @@ class AverageMeter(object):
 
 
 class ICDenseNet:
-    def __init__(self, model_path='models', data_path='test_data', save_path='outputs', print_freq=1):
+    def __init__(self, model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
         self.mean = [0.5071, 0.4867, 0.4408]
         self.stdv = [0.2675, 0.2565, 0.2761]
         self.inference_transforms = transforms.Compose([
@@ -105,8 +105,9 @@ class ICDenseNet:
                     ])
                     print(res)
 
+        print('batch_time.avg: {:.3f}, losses.avg: {:.4f}, error.avg: {:.4f}'.format(batch_time.avg, losses.avg, error.avg))
         with open(os.path.join(self.save_path, 'results.csv'), 'w') as f:
-            f.write('epoch,train_loss,train_error,valid_loss,valid_error,test_error\n')
+            f.write('batch_time.avg,losses.avg,error.avg\n')
             f.write('{:.5f},{:.5f},{:.5f}\n'.format(batch_time.avg, losses.avg, error.avg))
 
         # Return summary statistics
@@ -114,7 +115,7 @@ class ICDenseNet:
         return
 
     def _evaluate_without_label(self):
-        with open(os.path.join(self.save_path, 'results.csv'), 'a') as f:
+        with open(os.path.join(self.save_path, 'results.csv'), 'w') as f:
             f.write('image_name,predicted_class,probability\n')
             for file_name in self.image_list:
                 file_path = os.path.join(self.data_path, file_name)
@@ -129,9 +130,8 @@ class ICDenseNet:
                     softmax = nn.Softmax(dim=1)
                     pred_probs = softmax(output).cpu().numpy()[0]
                     index = torch.argmax(output, 1)[0].cpu().item()
-                    print('image_name: {}, predicted_class: {}, probability: {}'.format(file_name,
-                                                                                        self.classes[index],
-                                                                                        pred_probs[index]))
+                    print('image_name: {}, predicted_class: {}, probability: {:.5f}'
+                          .format(file_name, self.classes[index], pred_probs[index]))
                     f.write('{},{},{:.5f}\n'.format(file_name, self.classes[index], pred_probs[index]))
 
         print('This experiment has been completed.')
@@ -164,7 +164,7 @@ class ICDenseNet:
         return my_list
 
 
-def test(model_path='models', data_path='test_data', save_path='outputs', print_freq=1):
+def test(model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
     icdensenet = ICDenseNet(model_path, data_path, save_path, print_freq)
     icdensenet.evaluate()
 
