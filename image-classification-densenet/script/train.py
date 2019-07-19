@@ -1,8 +1,10 @@
-import fire
 import os
 import time
+import fire
+
 import torch
 from torchvision import datasets, transforms
+
 from .densenet import DenseNet
 
 
@@ -153,7 +155,8 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
                                                      gamma=0.1)
 
     with open(os.path.join(save_path, 'results.csv'), 'w') as f:
-        f.write('epoch,train_loss,train_error,valid_loss,valid_error,test_error\n')
+        f.write('batch_time.avg,losses.avg,error.avg\n')
+        f.write('batch_time.avg,losses.avg,error.avg\n')
 
     best_error = 1
     for epoch in range(epochs):

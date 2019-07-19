@@ -1,4 +1,4 @@
-name: DenseNet Inference
+name: DenseNet Score
 id: 11b144e5-955b-426b-8a3f-7bc2085112cd
 category: Machine Learning\Score
 description: Loads a DenseNet for image classification and inferences it
@@ -35,7 +35,7 @@ implementation:
     command:
     - python
     - -m
-    - script.inference
+    - script.score
     args:
     - --model_path
     - inputValue: Model path
@@ -43,3 +43,7 @@ implementation:
     - inputValue: Data path
     - --save_path
     - outputPath: Save path
+  invoking:
+    module: script.score
+    class: ICDenseNet
+    func: run
