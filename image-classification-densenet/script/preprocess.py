@@ -3,6 +3,7 @@ import json
 import fire
 import pandas as pd
 import base64
+import pyarrow.parquet as pq
 
 
 def entrance(data_path='dataset', save_path='outputs'):
@@ -15,7 +16,7 @@ def entrance(data_path='dataset', save_path='outputs'):
         input_data = json.dumps(s.decode('ascii'))
         my_list.append([input_data])
     df = pd.DataFrame(my_list, columns=['image_string'])
-    df.to_parquet(fname=os.path.join(save_path, "image_data.parquet"))
+    df.to_parquet(fname=os.path.join(save_path, 'image_data.parquet'), engine='pyarrow')
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {

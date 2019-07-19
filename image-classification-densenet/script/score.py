@@ -6,6 +6,7 @@ from PIL import Image
 from io import BytesIO
 import base64
 import pandas as pd
+import pyarrow.parquet as pq
 
 import torch
 import torch.nn as nn
@@ -164,11 +165,11 @@ class ICDenseNet:
         return my_list
 
     def evaluate_new(self):
-        input = pd.read_parquet(os.path.join(self.data_path, "image_data.parquet"))
+        input = pd.read_parquet(os.path.join(self.data_path, "image_data.parquet"), engine='pyarrow')
         self.run(input)
         output = [[x['label'], x['probability']] for x in input]
         df = pd.DataFrame(output, columns=['label', 'probability'])
-        df.to_parquet(fname=os.path.join(self.save_path, "labels.parquet"))
+        df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
 
 
 def test(model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
