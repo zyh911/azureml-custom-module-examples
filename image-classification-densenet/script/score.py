@@ -5,6 +5,7 @@ import fire
 from PIL import Image
 from io import BytesIO
 import base64
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -55,16 +56,7 @@ class ICDenseNet:
         self.save_path = save_path
         os.makedirs(self.save_path, exist_ok=True)
         self.classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-
-        self.has_label = False
-        try:
-            self.test_set = datasets.CIFAR10(self.data_path, train=False,
-                                             transform=self.inference_transforms, download=False)
-            self.has_label = True
-            self.print_freq = print_freq
-        except Exception as e:
-            print(e)
-            self.image_list = os.listdir(self.data_path)
+        self.print_freq = print_freq
 
     def _evaluate_with_label(self):
         test_loader = torch.utils.data.DataLoader(self.test_set, batch_size=64, shuffle=False,
@@ -138,6 +130,14 @@ class ICDenseNet:
         return
 
     def evaluate(self):
+        self.has_label = False
+        try:
+            self.test_set = datasets.CIFAR10(self.data_path, train=False,
+                                             transform=self.inference_transforms, download=False)
+            self.has_label = True
+        except Exception as e:
+            print(e)
+            self.image_list = os.listdir(self.data_path)
         if self.has_label:
             self._evaluate_with_label()
         else:
@@ -163,10 +163,17 @@ class ICDenseNet:
             my_list.append(result)
         return my_list
 
+    def evaluate_new(self):
+        input = pd.read_parquet(os.path.join(self.data_path, "image_data.parquet"))
+        self.run(input)
+        output = [[x['label'], x['probability']] for x in input]
+        df = pd.DataFrame(output, columns=['label', 'probability'])
+        df.to_parquet(fname=os.path.join(self.save_path, "labels.parquet"))
+
 
 def test(model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
     icdensenet = ICDenseNet(model_path, data_path, save_path, print_freq)
-    icdensenet.evaluate()
+    icdensenet.evaluate_new()
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
