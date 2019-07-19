@@ -168,6 +168,25 @@ def test(model_path='saved_model', data_path='test_data', save_path='outputs', p
     icdensenet = ICDenseNet(model_path, data_path, save_path, print_freq)
     icdensenet.evaluate()
 
+    # Dump data_type.json as a work around until SMT deploys
+    dct = {
+        "Id": "Dataset",
+        "Name": "Dataset .NET file",
+        "ShortName": "Dataset",
+        "Description": "A serialized DataTable supporting partial reads and writes",
+        "IsDirectory": False,
+        "Owner": "Microsoft Corporation",
+        "FileExtension": "dataset.parquet",
+        "ContentType": "application/octet-stream",
+        "AllowUpload": False,
+        "AllowPromotion": True,
+        "AllowModelPromotion": False,
+        "AuxiliaryFileExtension": None,
+        "AuxiliaryContentType": None
+    }
+    with open(os.path.join(save_path, 'data_type.json'), 'w') as f:
+        json.dump(dct, f)
+
 
 if __name__ == '__main__':
     fire.Fire(test)

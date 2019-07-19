@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import fire
 
 import torch
@@ -234,6 +235,29 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
 
     train(model=model, train_set=train_set, valid_set=valid_set, test_set=test_set,
           save_path=save_path, epochs=epochs, batch_size=batch_size, random_seed=random_seed)
+
+    # Dump data_type.json as a work around until SMT deploys
+    dct = {
+        "Id": "ILearnerDotNet",
+        "Name": "ILearner .NET file",
+        "ShortName": "Model",
+        "Description": "A .NET serialized ILearner",
+        "IsDirectory": False,
+        "Owner": "Microsoft Corporation",
+        "FileExtension": "ilearner",
+        "ContentType": "application/octet-stream",
+        "AllowUpload": False,
+        "AllowPromotion": False,
+        "AllowModelPromotion": True,
+        "AuxiliaryFileExtension": None,
+        "AuxiliaryContentType": None
+    }
+    with open(os.path.join(save_path, 'data_type.json'), 'w') as f:
+        json.dump(dct, f)
+    # Dump data.ilearner as a work around until data type design
+    visualization = os.path.join(save_path, "data.ilearner")
+    with open(visualization, 'w') as file:
+        file.writelines('{}')
     print('This experiment has been completed.')
 
 
