@@ -144,7 +144,7 @@ class ICDenseNet:
         else:
             self._evaluate_without_label()
 
-    def run(self, input):
+    def run(self, input, meta=None):
         my_list = []
         for i in range(input.shape[0]):
             temp = base64.b64decode(json.loads(input.iloc[i]['image_string']))
