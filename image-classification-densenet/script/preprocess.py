@@ -4,6 +4,8 @@ import fire
 import pandas as pd
 import base64
 import pyarrow.parquet as pq
+from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
+from azureml.studio.common.datatypes import DataTypes
 
 
 def entrance(data_path='test_data', save_path='outputs'):
@@ -18,6 +20,7 @@ def entrance(data_path='test_data', save_path='outputs'):
     df = pd.DataFrame(my_list, columns=['image_string'])
     os.makedirs(save_path, exist_ok=True)
     df.to_parquet(fname=os.path.join(save_path, 'image_data.parquet'), engine='pyarrow')
+    OutputHandler.handle_output(data=df, file_path=save_path, file_name='image_data.parquet', data_type=DataTypes.DATASET)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
