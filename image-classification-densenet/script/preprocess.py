@@ -21,17 +21,17 @@ def entrance(data_path='test_data', save_path='outputs'):
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
-        "Id": "ILearnerDotNet",
-        "Name": "ILearner .NET file",
-        "ShortName": "Model",
-        "Description": "A .NET serialized ILearner",
+        "Id": "Dataset",
+        "Name": "Dataset .NET file",
+        "ShortName": "Dataset",
+        "Description": "A serialized DataTable supporting partial reads and writes",
         "IsDirectory": False,
         "Owner": "Microsoft Corporation",
-        "FileExtension": "ilearner",
+        "FileExtension": "dataset.parquet",
         "ContentType": "application/octet-stream",
         "AllowUpload": False,
-        "AllowPromotion": False,
-        "AllowModelPromotion": True,
+        "AllowPromotion": True,
+        "AllowModelPromotion": False,
         "AuxiliaryFileExtension": None,
         "AuxiliaryContentType": None
     }
