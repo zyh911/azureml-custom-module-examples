@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from densenet import DenseNet
+from .densenet import DenseNet
 
 
 class AverageMeter(object):
