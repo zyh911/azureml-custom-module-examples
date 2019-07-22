@@ -6,7 +6,7 @@ import base64
 import pyarrow.parquet as pq
 
 
-def entrance(data_path='dataset', save_path='outputs'):
+def entrance(data_path='test_data', save_path='outputs'):
     my_list = []
     image_list = os.listdir(data_path)
     for file_name in image_list:

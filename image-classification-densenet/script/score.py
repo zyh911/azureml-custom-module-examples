@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from .densenet import DenseNet
+from densenet import DenseNet
 
 
 class AverageMeter(object):
@@ -146,8 +146,8 @@ class ICDenseNet:
 
     def run(self, input):
         my_list = []
-        for input_data in input:
-            temp = base64.b64decode(json.loads(input_data))
+        for i in range(input.shape[0]):
+            temp = base64.b64decode(json.loads(input.iloc[i]['image_string']))
             img = Image.open(BytesIO(temp))
             input_tensor = self.inference_transforms(img)
             input_tensor = input_tensor.unsqueeze(0)
@@ -165,14 +165,16 @@ class ICDenseNet:
         return my_list
 
     def evaluate_new(self):
-        input = pd.read_parquet(os.path.join(self.data_path, "image_data.parquet"), engine='pyarrow')
-        self.run(input)
-        output = [[x['label'], x['probability']] for x in input]
+        input = pd.read_parquet(os.path.join(self.data_path, 'image_data.parquet'), engine='pyarrow')
+        output_list = self.run(input)
+        output = [[x['label'], x['probability']] for x in output_list]
         df = pd.DataFrame(output, columns=['label', 'probability'])
         df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
+        # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
+        # print(input)
 
 
-def test(model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
+def test(model_path='saved_model', data_path='outputs', save_path='outputs2', print_freq=1):
     icdensenet = ICDenseNet(model_path, data_path, save_path, print_freq)
     icdensenet.evaluate_new()
 
