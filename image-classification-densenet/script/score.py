@@ -37,7 +37,7 @@ class AverageMeter(object):
 
 
 class ICDenseNet:
-    def __init__(self, model_path='saved_model', data_path='test_data', save_path='outputs'):
+    def __init__(self, model_path='saved_model', meta={}):
         self.mean = [0.5071, 0.4867, 0.4408]
         self.stdv = [0.2675, 0.2565, 0.2761]
         self.inference_transforms = transforms.Compose([
@@ -53,8 +53,6 @@ class ICDenseNet:
                 self.model = torch.nn.DataParallel(self.model).cuda()
 
         self.model.eval()
-        self.data_path = data_path
-        self.save_path = save_path
         os.makedirs(self.save_path, exist_ok=True)
         self.classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
         self.print_freq = 1
@@ -164,7 +162,9 @@ class ICDenseNet:
             my_list.append(result)
         return my_list
 
-    def evaluate_new(self):
+    def evaluate_new(self, data_path='test_data', save_path='outputs'):
+        self.data_path = data_path
+        self.save_path = save_path
         input = pd.read_parquet(os.path.join(self.data_path, 'image_data.parquet'), engine='pyarrow')
         output_list = self.run(input)
         output = [[x['label'], x['probability']] for x in output_list]
@@ -176,7 +176,7 @@ class ICDenseNet:
 
 def test(model_path='saved_model', data_path='outputs', save_path='outputs2'):
     icdensenet = ICDenseNet(model_path, data_path, save_path)
-    icdensenet.evaluate_new()
+    icdensenet.evaluate_new(data_path='test_data', save_path='outputs')
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
