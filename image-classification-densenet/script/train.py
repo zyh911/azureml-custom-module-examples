@@ -241,16 +241,16 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
         'Id': 'ILearnerDotNet',
         'Name': 'ILearner .NET file',
         'ShortName': 'Model',
-        "Description": "A .NET serialized ILearner",
-        "IsDirectory": False,
-        "Owner": "Microsoft Corporation",
-        "FileExtension": "ilearner",
-        "ContentType": "application/octet-stream",
-        "AllowUpload": False,
-        "AllowPromotion": False,
-        "AllowModelPromotion": True,
-        "AuxiliaryFileExtension": None,
-        "AuxiliaryContentType": None
+        'Description': 'A .NET serialized ILearner',
+        'IsDirectory': False,
+        'Owner': 'Microsoft Corporation',
+        'FileExtension': 'ilearner',
+        'ContentType': 'application/octet-stream',
+        'AllowUpload': False,
+        'AllowPromotion': False,
+        'AllowModelPromotion': True,
+        'AuxiliaryFileExtension': None,
+        'AuxiliaryContentType': None
     }
     with open(os.path.join(save_path, 'data_type.json'), 'w') as f:
         json.dump(dct, f)
