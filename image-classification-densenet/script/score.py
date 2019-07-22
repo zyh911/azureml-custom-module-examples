@@ -37,7 +37,7 @@ class AverageMeter(object):
 
 
 class ICDenseNet:
-    def __init__(self, model_path='saved_model', data_path='test_data', save_path='outputs', print_freq=1):
+    def __init__(self, model_path='saved_model', data_path='test_data', save_path='outputs'):
         self.mean = [0.5071, 0.4867, 0.4408]
         self.stdv = [0.2675, 0.2565, 0.2761]
         self.inference_transforms = transforms.Compose([
@@ -57,7 +57,7 @@ class ICDenseNet:
         self.save_path = save_path
         os.makedirs(self.save_path, exist_ok=True)
         self.classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-        self.print_freq = print_freq
+        self.print_freq = 1
 
     def _evaluate_with_label(self):
         test_loader = torch.utils.data.DataLoader(self.test_set, batch_size=64, shuffle=False,
@@ -174,8 +174,8 @@ class ICDenseNet:
         # print(input)
 
 
-def test(model_path='saved_model', data_path='outputs', save_path='outputs2', print_freq=1):
-    icdensenet = ICDenseNet(model_path, data_path, save_path, print_freq)
+def test(model_path='saved_model', data_path='outputs', save_path='outputs2'):
+    icdensenet = ICDenseNet(model_path, data_path, save_path)
     icdensenet.evaluate_new()
 
     # Dump data_type.json as a work around until SMT deploys
