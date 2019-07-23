@@ -21,7 +21,7 @@ implementation:
       channels:
       - defaults
       dependencies:
-      - python=3.7.3
+      - python=3.6.3
       - pip:
         - --extra-index-url=https://test.pypi.org/simple
         - fire==0.1.3
