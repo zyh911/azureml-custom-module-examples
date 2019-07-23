@@ -176,7 +176,7 @@ class ICDenseNet:
 
 def test(model_path='saved_model', data_path='outputs', save_path='outputs2'):
     icdensenet = ICDenseNet(model_path)
-    icdensenet.evaluate_new(data_path=data_path, save_path='outputs')
+    icdensenet.evaluate_new(data_path=data_path, save_path=save_path)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
