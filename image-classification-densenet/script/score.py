@@ -165,7 +165,7 @@ class ICDenseNet:
         self.data_path = data_path
         self.save_path = save_path
         os.makedirs(self.save_path, exist_ok=True)
-        input = pd.read_parquet(os.path.join(self.data_path, 'image_data.parquet'), engine='pyarrow')
+        input = pd.read_parquet(os.path.join(self.data_path, 'data.dataset.parquet'), engine='pyarrow')
         output_list = self.run(input)
         output = [[x['label'], x['probability']] for x in output_list]
         df = pd.DataFrame(output, columns=['label', 'probability'])

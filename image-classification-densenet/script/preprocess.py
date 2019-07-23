@@ -20,7 +20,7 @@ def entrance(data_path='test_data', save_path='outputs'):
         my_list.append([input_data])
     df = pd.DataFrame(my_list, columns=['image_string'])
     os.makedirs(save_path, exist_ok=True)
-    df.to_parquet(fname=os.path.join(save_path, 'image_data.parquet'), engine='pyarrow')
+    # df.to_parquet(fname=os.path.join(save_path, 'data.dataset.parquet'), engine='pyarrow')
     dt = DataTable(df)
     OutputHandler.handle_output(data=dt, file_path=save_path,
                                 file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
