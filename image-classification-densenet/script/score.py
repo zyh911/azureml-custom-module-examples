@@ -46,7 +46,7 @@ class ICDenseNet:
         ])
 
         self.model = DenseNet()
-        self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth')))
+        self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
             if torch.cuda.device_count() > 1:
