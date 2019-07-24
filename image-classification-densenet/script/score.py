@@ -159,16 +159,16 @@ class ICDenseNet:
 
             result = {'label': self.classes[index], 'probability': str(pred_probs[index])}
             my_list.append(result)
-        return my_list
+        output = [[x['label'], x['probability']] for x in my_list]
+        df = pd.DataFrame(output, columns=['label', 'probability'])
+        return df
 
     def evaluate_new(self, data_path='test_data', save_path='outputs'):
         self.data_path = data_path
         self.save_path = save_path
         os.makedirs(self.save_path, exist_ok=True)
         input = pd.read_parquet(os.path.join(self.data_path, 'data.dataset.parquet'), engine='pyarrow')
-        output_list = self.run(input)
-        output = [[x['label'], x['probability']] for x in output_list]
-        df = pd.DataFrame(output, columns=['label', 'probability'])
+        df = self.run(input)
         df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # print(input)
