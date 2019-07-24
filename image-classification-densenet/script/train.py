@@ -156,8 +156,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
                                                      gamma=0.1)
 
     with open(os.path.join(save_path, 'results.csv'), 'w') as f:
-        f.write('batch_time.avg,losses.avg,error.avg\n')
-        f.write('batch_time.avg,losses.avg,error.avg\n')
+        f.write('epoch,train_loss,train_error,valid_loss,valid_error,test_error\n')
 
     best_error = 1
     for epoch in range(epochs):
@@ -218,7 +217,7 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
     train_set = datasets.CIFAR10(data_path, train=True, transform=train_transforms, download=False)
     test_set = datasets.CIFAR10(data_path, train=False, transform=test_transforms, download=False)
 
-    if valid_size:
+    if valid_size > 0:
         valid_set = datasets.CIFAR10(data_path, train=True, transform=test_transforms)
         indices = torch.randperm(len(train_set))
         train_indices = indices[:len(indices) - valid_size]
