@@ -7,6 +7,9 @@ from io import BytesIO
 import base64
 import pandas as pd
 import pyarrow.parquet as pq
+from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
+from azureml.studio.common.datatypes import DataTypes
+from azureml.studio.common.datatable.data_table import DataTable
 
 import torch
 import torch.nn as nn
@@ -169,9 +172,12 @@ class ICDenseNet:
         os.makedirs(self.save_path, exist_ok=True)
         input = pd.read_parquet(os.path.join(self.data_path, 'data.dataset.parquet'), engine='pyarrow')
         df = self.run(input)
-        df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
+        # df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # print(input)
+        dt = DataTable(df)
+        OutputHandler.handle_output(data=dt, file_path=self.save_path,
+                                    file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
 
 
 def test(model_path='saved_model', data_path='outputs', save_path='outputs2'):
