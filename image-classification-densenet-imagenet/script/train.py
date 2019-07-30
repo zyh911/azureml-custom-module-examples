@@ -195,7 +195,6 @@ def train(model, model_type, memory_efficient, train_set, valid_set, test_set, s
         f.write(',,,,,{:.5f}\n'.format(test_error))
     print('Final test error: {:.4f}'.format(test_error))
 
-
 def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
              memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 

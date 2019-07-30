@@ -16,7 +16,7 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 
 from .densenet import DenseNet, densenet201
-from .imagenet1000_clsidx_to_labels import my_dict
+from .imagenet1000_index_to_label import my_dict
 
 
 class AverageMeter(object):
