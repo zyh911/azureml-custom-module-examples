@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from .densenet import DenseNet
+from .densenet import DenseNet, densenet201
 from .imagenet1000_clsidx_to_labels import my_dict
 
 
@@ -51,6 +51,7 @@ class ICDenseNet:
 
         self.model = DenseNet()
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
+        # self.model = densenet201(pretrained=True, memory_efficient=False)
         if torch.cuda.is_available():
             self.model = self.model.cuda()
             if torch.cuda.device_count() > 1:
@@ -162,6 +163,7 @@ class ICDenseNet:
                 index = torch.argmax(output, 1)[0].cpu().item()
 
             result = {'label': self.classes[index], 'probability': str(pred_probs[index])}
+            print(self.classes[index])
             my_list.append(result)
         # print(my_list)
         output = [[x['label'], x['probability']] for x in my_list]

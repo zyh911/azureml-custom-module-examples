@@ -6,7 +6,7 @@ import fire
 import torch
 from torchvision import datasets, transforms
 
-from .densenet import densenet201, densenet169, densenet161, densenet121
+from .densenet import densenet201, densenet169, densenet161, densenet121, DenseNet
 
 
 class AverageMeter(object):
@@ -182,14 +182,8 @@ def train(model, model_type, memory_efficient, train_set, valid_set, test_set, s
             f.write('{:3d},{:.6f},{:.6f},{:.5f},{:.5f},\n'.format(epoch + 1, train_loss,
                                                                   train_error, valid_loss,
                                                                   valid_error))
-    if model_type == 'densenet201':
-        model = densenet201(pretrained=False, memory_efficient=memory_efficient)
-    elif model_type == 'densenet169':
-        model = densenet169(pretrained=False, memory_efficient=memory_efficient)
-    elif model_type == 'densenet161':
-        model = densenet161(pretrained=False, memory_efficient=memory_efficient)
-    else:
-        model = densenet121(pretrained=False, memory_efficient=memory_efficient)
+
+    model = DenseNet()
     model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth')))
     if torch.cuda.is_available():
         model = model.cuda()
