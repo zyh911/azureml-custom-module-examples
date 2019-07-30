@@ -1,5 +1,5 @@
 name: ImageNet Preprocess
-id: fa4862d9-4d0d-4ada-b9fa-e6913a07e666
+id: b0991fb8-154a-4cba-bb95-f91b9d179b94
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
 inputs:

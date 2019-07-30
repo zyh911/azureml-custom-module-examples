@@ -1,5 +1,5 @@
 name: ImageNet Score
-id: 11b144e5-955b-426b-8a3f-7bc2085112cd
+id: ccce8bea-c5dc-4fef-89b2-8956b07eb608
 category: Machine Learning\Score
 description: Loads a DenseNet for image classification and inferences it
 inputs:

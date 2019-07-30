@@ -1,5 +1,5 @@
-name: Imagenet Training
-id: 2b48f024-1e2e-4821-b73b-9740321f0505
+name: ImageNet Training
+id: 92a1706a-c867-4674-864b-bad84acc42a2
 category: Machine Learning\Train
 description: Creates a DenseNet for image classification and trains it
 inputs:
