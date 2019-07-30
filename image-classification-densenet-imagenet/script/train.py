@@ -198,14 +198,18 @@ def train(model, model_type, memory_efficient, train_set, valid_set, test_set, s
 def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
              memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
-    mean = [0.5071, 0.4867, 0.4408]
-    stdv = [0.2675, 0.2565, 0.2761]
+    mean = [0.485, 0.456, 0.406]
+    stdv = [0.229, 0.224, 0.225]
     train_transforms = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=stdv),
     ])
     test_transforms = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=stdv),
     ])
