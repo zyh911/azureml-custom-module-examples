@@ -1,4 +1,4 @@
-name: Image Preprocess
+name: ImageNet Preprocess
 id: fa4862d9-4d0d-4ada-b9fa-e6913a07e666
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
@@ -29,7 +29,7 @@ implementation:
         - pandas==0.24.2
         - pillow==6.0.0
         - pyarrow==0.14.0
-        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-densenet
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-densenet-imagenet
     command:
     - python
     - -m

@@ -1,4 +1,4 @@
-name: DenseNet Score
+name: ImageNet Score
 id: 11b144e5-955b-426b-8a3f-7bc2085112cd
 category: Machine Learning\Score
 description: Loads a DenseNet for image classification and inferences it
@@ -35,7 +35,7 @@ implementation:
         - https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
         - pillow==6.0.0
         - pyarrow==0.14.0
-        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-densenet
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-densenet-imagenet
     command:
     - python
     - -m
