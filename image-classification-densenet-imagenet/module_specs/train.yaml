@@ -9,13 +9,13 @@ inputs:
   description: data_path
 - name: Model Type
   type: Mode
-  default: "densenet201"
+  default: 'densenet201'
   description: model_type
   options:
-    - densenet201
-    - "densenet169"
+    - 'densenet201'
+    - 'densenet169'
     - 'densenet161'
-    - densenet121
+    - 'densenet121'
 - name: Pretrained
   type: Boolean
   default: True
