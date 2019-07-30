@@ -125,7 +125,7 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
 
 
 def train(model, model_type, memory_efficient, train_set, valid_set, test_set, save_path, epochs,
-          batch_size, lr=0.1, wd=0.0001, momentum=0.9, random_seed=None):
+          batch_size, lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None):
     if random_seed is not None:
         if torch.cuda.is_available():
             if torch.cuda.device_count() > 1:
@@ -211,8 +211,10 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    train_set = datasets.ImageNet(data_path, train=True, transform=train_transforms, download=True)
-    test_set = datasets.ImageNet(data_path, train=False, transform=test_transforms, download=False)
+    # train_set = datasets.ImageNet(data_path, train=True, transform=train_transforms, download=True)
+    # test_set = datasets.ImageNet(data_path, train=False, transform=test_transforms, download=False)
+    train_set = datasets.ImageNet(save_path, train=True, transform=train_transforms, download=True)
+    test_set = datasets.ImageNet(save_path, train=False, transform=test_transforms, download=False)
 
     if valid_size > 0:
         valid_set = datasets.ImageNet(data_path, train=True, transform=test_transforms)
