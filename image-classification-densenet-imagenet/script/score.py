@@ -16,6 +16,7 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 
 from .densenet import DenseNet
+from .imagenet1000_clsidx_to_labels import my_dict
 
 
 class AverageMeter(object):
@@ -56,7 +57,7 @@ class ICDenseNet:
                 self.model = torch.nn.DataParallel(self.model).cuda()
 
         self.model.eval()
-        self.classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+        self.classes = my_dict
         self.print_freq = 1
 
     def _evaluate_with_label(self):
