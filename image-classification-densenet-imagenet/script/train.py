@@ -197,7 +197,7 @@ def train(model, model_type, memory_efficient, train_set, valid_set, test_set, s
 
 
 def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
-             memory_efficient=False, valid_size=5000, epochs=1, batch_size=4, random_seed=None):
+             memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
     mean = [0.5071, 0.4867, 0.4408]
     stdv = [0.2675, 0.2565, 0.2761]
@@ -211,20 +211,12 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    # train_set = datasets.ImageNet(data_path, train=True, transform=train_transforms, download=True)
-    # test_set = datasets.ImageNet(data_path, train=False, transform=test_transforms, download=False)
-    train_set = datasets.ImageNet(save_path, train=True, transform=train_transforms, download=True)
-    test_set = datasets.ImageNet(save_path, train=False, transform=test_transforms, download=False)
+    # train_set = datasets.ImageNet(data_path, split='train', transform=train_transforms, download=True)
+    # test_set = datasets.ImageNet(data_path, split='val', transform=test_transforms, download=False)
+    train_set = datasets.ImageNet(save_path, split='train', transform=train_transforms, download=True)
+    test_set = datasets.ImageNet(save_path, split='val', transform=test_transforms, download=False)
 
-    if valid_size > 0:
-        valid_set = datasets.ImageNet(data_path, train=True, transform=test_transforms)
-        indices = torch.randperm(len(train_set))
-        train_indices = indices[:len(indices) - valid_size]
-        valid_indices = indices[len(indices) - valid_size:]
-        train_set = torch.utils.data.Subset(train_set, train_indices)
-        valid_set = torch.utils.data.Subset(valid_set, valid_indices)
-    else:
-        valid_set = None
+    valid_set = None
 
     if model_type == 'densenet201':
         model = densenet201(pretrained=pretrained, memory_efficient=memory_efficient)

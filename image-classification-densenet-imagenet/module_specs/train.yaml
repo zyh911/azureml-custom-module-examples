@@ -24,10 +24,6 @@ inputs:
   type: Boolean
   default: False
   description: memory_efficient
-- name: Valid size
-  type: Int
-  default: 5000
-  description: valid_size
 - name: Epochs
   type: Int
   default: 1
@@ -74,8 +70,6 @@ implementation:
     - inputValue: Pretrained
     - --memory_efficient
     - inputValue: Memory efficient
-    - --valid_size
-    - inputValue: Valid size
     - --epochs
     - inputValue: Epochs
     - --batch_size
