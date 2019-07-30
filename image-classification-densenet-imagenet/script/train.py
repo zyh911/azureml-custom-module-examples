@@ -6,7 +6,7 @@ import fire
 import torch
 from torchvision import datasets, transforms
 
-from densenet import densenet201, densenet169, densenet161, densenet121
+from .densenet import densenet201, densenet169, densenet161, densenet121
 
 
 class AverageMeter(object):
