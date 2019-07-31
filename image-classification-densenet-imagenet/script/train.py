@@ -124,8 +124,8 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
     return batch_time.avg, losses.avg, error.avg
 
 
-def train(model, model_type, memory_efficient, train_set, valid_set, test_set, save_path, epochs,
-          batch_size, lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None):
+def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
+          lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None):
     if random_seed is not None:
         if torch.cuda.is_available():
             if torch.cuda.device_count() > 1:
@@ -195,6 +195,7 @@ def train(model, model_type, memory_efficient, train_set, valid_set, test_set, s
         f.write(',,,,,{:.5f}\n'.format(test_error))
     print('Final test error: {:.4f}'.format(test_error))
 
+
 def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
              memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
@@ -214,10 +215,8 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    # train_set = datasets.ImageNet(data_path, split='train', transform=train_transforms, download=True)
-    # test_set = datasets.ImageNet(data_path, split='val', transform=test_transforms, download=False)
-    train_set = datasets.ImageNet(save_path, split='train', transform=train_transforms, download=True)
-    test_set = datasets.ImageNet(save_path, split='val', transform=test_transforms, download=False)
+    train_set = datasets.ImageNet(data_path, split='train', transform=train_transforms, download=True)
+    test_set = datasets.ImageNet(data_path, split='val', transform=test_transforms, download=False)
 
     valid_set = None
 
@@ -232,7 +231,7 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
 
     os.makedirs(save_path, exist_ok=True)
 
-    train(model=model, model_type=model_type, memory_efficient=memory_efficient, train_set=train_set,
+    train(model=model, train_set=train_set,
           valid_set=valid_set, test_set=test_set, save_path=save_path, epochs=epochs,
           batch_size=batch_size, random_seed=random_seed)
 
@@ -261,5 +260,47 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
     print('This experiment has been completed.')
 
 
+def entrance_fake(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
+             memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
+
+    if model_type == 'densenet201':
+        model = densenet201(pretrained=pretrained, memory_efficient=memory_efficient)
+    elif model_type == 'densenet169':
+        model = densenet169(pretrained=pretrained, memory_efficient=memory_efficient)
+    elif model_type == 'densenet161':
+        model = densenet161(pretrained=pretrained, memory_efficient=memory_efficient)
+    else:
+        model = densenet121(pretrained=pretrained, memory_efficient=memory_efficient)
+
+    os.makedirs(save_path, exist_ok=True)
+
+    torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
+
+    # Dump data_type.json as a work around until SMT deploys
+    dct = {
+        'Id': 'ILearnerDotNet',
+        'Name': 'ILearner .NET file',
+        'ShortName': 'Model',
+        'Description': 'A .NET serialized ILearner',
+        'IsDirectory': False,
+        'Owner': 'Microsoft Corporation',
+        'FileExtension': 'ilearner',
+        'ContentType': 'application/octet-stream',
+        'AllowUpload': False,
+        'AllowPromotion': False,
+        'AllowModelPromotion': True,
+        'AuxiliaryFileExtension': None,
+        'AuxiliaryContentType': None
+    }
+    with open(os.path.join(save_path, 'data_type.json'), 'w') as f:
+        json.dump(dct, f)
+    # Dump data.ilearner as a work around until data type design
+    visualization = os.path.join(save_path, 'data.ilearner')
+    with open(visualization, 'w') as file:
+        file.writelines('{}')
+    print('This experiment has been completed.')
+
+
 if __name__ == '__main__':
-    fire.Fire(entrance)
+    # fire.Fire(entrance)
+    fire.Fire(entrance_fake)
