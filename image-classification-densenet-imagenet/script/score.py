@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from .densenet import DenseNet, densenet201
+from .densenet import densenet201, densenet169, densenet161, densenet121
 from .imagenet1000_index_to_label import my_dict
 
 
@@ -50,10 +50,19 @@ class ICDenseNet:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
+        if meta['model_type'] == 'densenet201':
+            self.model = densenet201(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model.load_state_dict(torch.load(os.path.join(model_path, 'model201.pth'), map_location='cpu'))
+        elif meta['model_type'] == 'densenet169':
+            self.model = densenet169(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model.load_state_dict(torch.load(os.path.join(model_path, 'model169.pth'), map_location='cpu'))
+        elif meta['model_type'] == 'densenet161':
+            self.model = densenet161(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model.load_state_dict(torch.load(os.path.join(model_path, 'model161.pth'), map_location='cpu'))
+        else:
+            self.model = densenet121(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model.load_state_dict(torch.load(os.path.join(model_path, 'model121.pth'), map_location='cpu'))
 
-        self.model = DenseNet()
-        self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
-        # self.model = densenet201(pretrained=True, memory_efficient=False)
         if torch.cuda.is_available():
             self.model = self.model.cuda()
             if torch.cuda.device_count() > 1:
@@ -186,8 +195,10 @@ class ICDenseNet:
                                     file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
 
 
-def test(model_path='saved_model', data_path='outputs', save_path='outputs2'):
-    icdensenet = ICDenseNet(model_path)
+def test(model_path='saved_model', data_path='outputs', save_path='outputs2', model_type='densenet201',
+         memory_efficient=False):
+    meta = {'model_type': model_type, 'memory_efficient': memory_efficient}
+    icdensenet = ICDenseNet(model_path, meta)
     icdensenet.evaluate_new(data_path=data_path, save_path=save_path)
 
     # Dump data_type.json as a work around until SMT deploys
