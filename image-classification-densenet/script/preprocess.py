@@ -12,7 +12,11 @@ from azureml.studio.common.datatable.data_table import DataTable
 def entrance(data_path='test_data', save_path='outputs'):
     my_list = []
     image_list = os.listdir(data_path)
+    post_list = ['jfif', 'png', 'jpg', 'jpeg']
     for file_name in image_list:
+        lists = file_name.split('.')
+        if lists[-1] not in post_list:
+            continue
         file_path = os.path.join(data_path, file_name)
         with open(file_path, 'rb') as f:
             s = base64.b64encode(f.read())
