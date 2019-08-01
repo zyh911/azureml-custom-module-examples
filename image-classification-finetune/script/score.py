@@ -41,8 +41,7 @@ class AverageMeter(object):
 
 
 class ICDenseNet:
-    def __init__(self, model_path='saved_model',
-                 meta={'model_type': 'densenet201', 'memory_efficient': False}):
+    def __init__(self, model_path='saved_model', meta={}):
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
