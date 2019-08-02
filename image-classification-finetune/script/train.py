@@ -6,7 +6,8 @@ import fire
 import torch
 from torchvision import datasets, transforms
 
-from .densenet import densenet201, densenet169, densenet161, densenet121, DenseNet
+from densenet import densenet201, densenet169, densenet161, densenet121
+from imagenet1000_label_to_index import new_dict
 
 
 class AverageMeter(object):
@@ -30,7 +31,7 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-def test(model, loader, print_freq=1, is_test=True):
+def test(model, loader, print_freq=1, is_test=True, label_list=None):
     batch_time = AverageMeter()
     losses = AverageMeter()
     error = AverageMeter()
@@ -41,7 +42,13 @@ def test(model, loader, print_freq=1, is_test=True):
     end = time.time()
     with torch.no_grad():
         for batch_idx, (input, target) in enumerate(loader):
-            # Create vaiables
+            # Create variables
+            for i in range(len(target)):
+                name = label_list[target[i]]
+                names = name.split('-', 1)
+                names2 = names[-1].split('_')
+                final_str = ' '.join(names2)
+                target[i] = torch.tensor(new_dict[final_str])
             if torch.cuda.is_available():
                 input = input.cuda()
                 target = target.cuda()
@@ -75,7 +82,7 @@ def test(model, loader, print_freq=1, is_test=True):
     return batch_time.avg, losses.avg, error.avg
 
 
-def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
+def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1, label_list=None):
     batch_time = AverageMeter()
     losses = AverageMeter()
     error = AverageMeter()
@@ -85,7 +92,13 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
 
     end = time.time()
     for batch_idx, (input, target) in enumerate(loader):
-        # Create vaiables
+        # Create variables
+        for i in range(len(target)):
+            name = label_list[target[i]]
+            names = name.split('-', 1)
+            names2 = names[-1].split('_')
+            final_str = ' '.join(names2)
+            target[i] = torch.tensor(new_dict[final_str])
         if torch.cuda.is_available():
             input = input.cuda()
             target = target.cuda()
@@ -125,7 +138,8 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
 
 
 def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
-          lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None):
+          lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None,
+          model_type='densenet201', memory_efficient=False, label_list=None):
     if random_seed is not None:
         if torch.cuda.is_available():
             if torch.cuda.device_count() > 1:
@@ -162,10 +176,12 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
     for epoch in range(epochs):
         scheduler.step()
         _, train_loss, train_error = train_epoch(model=model, loader=train_loader,
-                                                 optimizer=optimizer, epoch=epoch, epochs=epochs)
+                                                 optimizer=optimizer, epoch=epoch, epochs=epochs,
+                                                 label_list=label_list)
         _, valid_loss, valid_error = test(model=model,
                                           loader=valid_loader if valid_loader else test_loader,
-                                          is_test=not valid_loader)
+                                          is_test=not valid_loader,
+                                          label_list=label_list)
 
         # Determine if model is the best
         if valid_loader:
@@ -183,7 +199,14 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
                                                                   train_error, valid_loss,
                                                                   valid_error))
 
-    model = DenseNet()
+    if model_type == 'densenet201':
+        model = densenet201(pretrained=False, memory_efficient=memory_efficient)
+    elif model_type == 'densenet169':
+        model = densenet169(pretrained=False, memory_efficient=memory_efficient)
+    elif model_type == 'densenet161':
+        model = densenet161(pretrained=False, memory_efficient=memory_efficient)
+    else:
+        model = densenet121(pretrained=False, memory_efficient=memory_efficient)
     model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth')))
     if torch.cuda.is_available():
         model = model.cuda()
@@ -196,8 +219,8 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
     print('Final test error: {:.4f}'.format(test_error))
 
 
-def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
-             memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
+def entrance(data_path='dataset/Images', save_path='outputs', model_type='densenet201', pretrained=True,
+             memory_efficient=False, epochs=10, batch_size=4, random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
     stdv = [0.229, 0.224, 0.225]
@@ -215,8 +238,15 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    train_set = datasets.ImageNet(data_path, split='train', transform=train_transforms, download=True)
-    test_set = datasets.ImageNet(data_path, split='val', transform=test_transforms, download=False)
+    train_set = datasets.ImageFolder(data_path, transform=train_transforms)
+    label_list = train_set.classes
+    test_set = datasets.ImageFolder(data_path, transform=test_transforms)
+    indices = torch.randperm(len(train_set))
+    test_size = len(train_set) // 10
+    train_indices = indices[:len(indices) - test_size]
+    test_indices = indices[len(indices) - test_size:]
+    train_set = torch.utils.data.Subset(train_set, train_indices)
+    test_set = torch.utils.data.Subset(test_set, test_indices)
 
     valid_set = None
 
@@ -233,7 +263,9 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
 
     train(model=model, train_set=train_set,
           valid_set=valid_set, test_set=test_set, save_path=save_path, epochs=epochs,
-          batch_size=batch_size, random_seed=random_seed)
+          batch_size=batch_size, random_seed=random_seed,
+          model_type=model_type, memory_efficient=memory_efficient,
+          label_list=label_list)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
@@ -303,5 +335,5 @@ def entrance_fake(data_path='dataset', save_path='saved_model', model_type='dens
 
 
 if __name__ == '__main__':
-    # fire.Fire(entrance)
-    fire.Fire(entrance_fake)
+    # fire.Fire(entrance_fake)
+    fire.Fire(entrance)
