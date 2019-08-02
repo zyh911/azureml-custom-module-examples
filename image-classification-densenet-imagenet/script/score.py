@@ -51,6 +51,7 @@ class ICDenseNet:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
+        print(1)
         if meta['model_type'] == 'densenet201':
             self.model = densenet201(pretrained=False, memory_efficient=meta['memory_efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model201.pth'), map_location='cpu'))
@@ -72,6 +73,7 @@ class ICDenseNet:
         self.model.eval()
         self.classes = my_dict
         self.print_freq = 1
+        print(2)
 
     def _evaluate_with_label(self):
         test_loader = torch.utils.data.DataLoader(self.test_set, batch_size=64, shuffle=False,
@@ -160,7 +162,9 @@ class ICDenseNet:
 
     def run(self, input, meta=None):
         my_list = []
+        print(3)
         for i in range(input.shape[0]):
+            print(4)
             temp = base64.b64decode(json.loads(input.iloc[i]['image_string']))
             img = Image.open(BytesIO(temp))
             input_tensor = self.inference_transforms(img)
@@ -178,6 +182,7 @@ class ICDenseNet:
             print(self.classes[index])
             my_list.append(result)
         # print(my_list)
+        print(5)
         output = [[x['label'], x['probability']] for x in my_list]
         df = pd.DataFrame(output, columns=['label', 'probability'])
         return df
