@@ -41,8 +41,7 @@ class AverageMeter(object):
 
 
 class ICDenseNet:
-    def __init__(self, model_path='saved_model',
-                 meta={'model_type': 'densenet201', 'memory_efficient': False}, **kwargs):
+    def __init__(self, model_path='saved_model', meta={}):
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
@@ -53,21 +52,17 @@ class ICDenseNet:
         ])
         print(1)
         print(meta)
-        print(200)
-        for k, v in kwargs.items():
-            print(k, v)
-        print(100)
-        if meta['model_type'] == 'densenet201':
-            self.model = densenet201(pretrained=False, memory_efficient=meta['memory_efficient'])
+        if meta['Model Type'] == 'densenet201':
+            self.model = densenet201(pretrained=False, memory_efficient=meta['Memory efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model201.pth'), map_location='cpu'))
-        elif meta['model_type'] == 'densenet169':
-            self.model = densenet169(pretrained=False, memory_efficient=meta['memory_efficient'])
+        elif meta['Model Type'] == 'densenet169':
+            self.model = densenet169(pretrained=False, memory_efficient=meta['Memory efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model169.pth'), map_location='cpu'))
-        elif meta['model_type'] == 'densenet161':
-            self.model = densenet161(pretrained=False, memory_efficient=meta['memory_efficient'])
+        elif meta['Model Type'] == 'densenet161':
+            self.model = densenet161(pretrained=False, memory_efficient=meta['Memory efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model161.pth'), map_location='cpu'))
         else:
-            self.model = densenet121(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model = densenet121(pretrained=False, memory_efficient=meta['Memory efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model121.pth'), map_location='cpu'))
 
         if torch.cuda.is_available():

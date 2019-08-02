@@ -50,14 +50,14 @@ class ICDenseNet:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
-        if meta['model_type'] == 'densenet201':
-            self.model = densenet201(pretrained=False, memory_efficient=meta['memory_efficient'])
-        elif meta['model_type'] == 'densenet169':
-            self.model = densenet169(pretrained=False, memory_efficient=meta['memory_efficient'])
-        elif meta['model_type'] == 'densenet161':
-            self.model = densenet161(pretrained=False, memory_efficient=meta['memory_efficient'])
+        if meta['Model Type'] == 'densenet201':
+            self.model = densenet201(pretrained=False, memory_efficient=meta['Memory efficient'])
+        elif meta['Model Type'] == 'densenet169':
+            self.model = densenet169(pretrained=False, memory_efficient=meta['Memory efficient'])
+        elif meta['Model Type'] == 'densenet161':
+            self.model = densenet161(pretrained=False, memory_efficient=meta['Memory efficient'])
         else:
-            self.model = densenet121(pretrained=False, memory_efficient=meta['memory_efficient'])
+            self.model = densenet121(pretrained=False, memory_efficient=meta['Memory efficient'])
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
