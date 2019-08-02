@@ -138,7 +138,7 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1, label_lis
 
 
 def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
-          lr=0.0001, wd=0.0001, momentum=0.9, random_seed=None,
+          lr=0.001, wd=0.0001, momentum=0.9, random_seed=None,
           model_type='densenet201', memory_efficient=False, label_list=None):
     if random_seed is not None:
         if torch.cuda.is_available():
