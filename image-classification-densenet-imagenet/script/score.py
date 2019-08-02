@@ -207,7 +207,7 @@ class ICDenseNet:
 
 def test(model_path='saved_model', data_path='outputs', save_path='outputs2', model_type='densenet201',
          memory_efficient=False):
-    meta = {'model_type': model_type, 'memory_efficient': memory_efficient}
+    meta = {'Model Type': model_type, 'Memory efficient': memory_efficient}
     icdensenet = ICDenseNet(model_path, meta)
     icdensenet.evaluate_new(data_path=data_path, save_path=save_path)
 
