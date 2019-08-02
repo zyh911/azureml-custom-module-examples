@@ -6,8 +6,8 @@ import fire
 import torch
 from torchvision import datasets, transforms
 
-from densenet import densenet201, densenet169, densenet161, densenet121
-from imagenet1000_label_to_index import new_dict
+from .densenet import densenet201, densenet169, densenet161, densenet121
+from .imagenet1000_label_to_index import new_dict
 
 
 class AverageMeter(object):
@@ -219,7 +219,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
     print('Final test error: {:.4f}'.format(test_error))
 
 
-def entrance(data_path='dataset/imagefolder1', save_path='outputs', model_type='densenet201', pretrained=True,
+def entrance(data_path='dataset/imagefolder1', save_path='saved_model', model_type='densenet201', pretrained=True,
              memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
