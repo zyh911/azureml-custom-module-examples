@@ -42,7 +42,7 @@ class AverageMeter(object):
 
 class ICDenseNet:
     def __init__(self, model_path='saved_model',
-                 meta={'model_type': 'densenet201', 'memory_efficient': False}):
+                 meta={'model_type': 'densenet201', 'memory_efficient': False}, **kwargs):
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
@@ -52,6 +52,10 @@ class ICDenseNet:
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
         print(1)
+        print(meta)
+        for k, v in kwargs.items():
+            print(k, v)
+        print(100)
         if meta['model_type'] == 'densenet201':
             self.model = densenet201(pretrained=False, memory_efficient=meta['memory_efficient'])
             self.model.load_state_dict(torch.load(os.path.join(model_path, 'model201.pth'), map_location='cpu'))
