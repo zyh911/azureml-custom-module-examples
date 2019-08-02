@@ -147,7 +147,11 @@ class ICDenseNet:
     def run(self, input, meta=None):
         my_list = []
         for i in range(input.shape[0]):
-            temp = base64.b64decode(json.loads(input.iloc[i]['image_string']))
+            temp_string = json.loads(input.iloc[i]['image_string'])
+            if temp_string.startswith('data:'):
+                my_index = temp_string.find('base64,')
+                temp_string = temp_string[my_index + 7:]
+            temp = base64.b64decode(temp_string)
             img = Image.open(BytesIO(temp))
             input_tensor = self.inference_transforms(img)
             input_tensor = input_tensor.unsqueeze(0)
