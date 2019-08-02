@@ -23,6 +23,8 @@ def entrance(data_path='test_data', save_path='outputs'):
         input_data = json.dumps(s.decode('ascii'))
         my_list.append([input_data])
     df = pd.DataFrame(my_list, columns=['image_string'])
+    for i in range(df.shape[0]):
+        df.iloc[i]['image_string'] = df.iloc[i]['image_string'].strip('"')
     os.makedirs(save_path, exist_ok=True)
     # df.to_parquet(fname=os.path.join(save_path, 'data.dataset.parquet'), engine='pyarrow')
     dt = DataTable(df)
