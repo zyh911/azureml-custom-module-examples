@@ -20,11 +20,8 @@ def entrance(data_path='test_data', save_path='outputs'):
         file_path = os.path.join(data_path, file_name)
         with open(file_path, 'rb') as f:
             s = base64.b64encode(f.read())
-        print(s.decode('ascii'))
         input_data = json.dumps(s.decode('ascii'))
-        print(input_data)
         my_list.append([input_data])
-        print(my_list)
     df = pd.DataFrame(my_list, columns=['image_string'])
     for i in range(df.shape[0]):
         df.iloc[i]['image_string'] = df.iloc[i]['image_string'].strip('"')
