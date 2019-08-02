@@ -29,6 +29,7 @@ implementation:
       - pip:
         - --extra-index-url=https://test.pypi.org/simple
         - fire==0.1.3
+        - azureml-core==1.0.48
         - alghost==0.0.70
         - pandas==0.24.2
         - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl

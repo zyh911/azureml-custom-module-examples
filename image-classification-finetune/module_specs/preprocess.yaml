@@ -25,6 +25,7 @@ implementation:
       - pip:
         - --extra-index-url=https://test.pypi.org/simple
         - fire==0.1.3
+        - azureml-core==1.0.48
         - alghost==0.0.70
         - pandas==0.24.2
         - pillow==6.0.0
