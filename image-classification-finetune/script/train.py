@@ -212,7 +212,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
         model = model.cuda()
         if torch.cuda.device_count() > 1:
             model = torch.nn.DataParallel(model).cuda()
-    test_results = test(model=model, loader=test_loader, is_test=True)
+    test_results = test(model=model, loader=test_loader, is_test=True, label_list=label_list)
     _, _, test_error = test_results
     with open(os.path.join(save_path, 'results.csv'), 'a') as f:
         f.write(',,,,,{:.5f}\n'.format(test_error))
@@ -220,7 +220,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
 
 
 def entrance(data_path='dataset/imagefolder1', save_path='outputs', model_type='densenet201', pretrained=True,
-             memory_efficient=False, epochs=10, batch_size=4, random_seed=None):
+             memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
     stdv = [0.229, 0.224, 0.225]
