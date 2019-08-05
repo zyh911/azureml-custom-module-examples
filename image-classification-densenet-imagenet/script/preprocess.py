@@ -20,7 +20,8 @@ def entrance(data_path='test_data', save_path='outputs'):
         file_path = os.path.join(data_path, file_name)
         with open(file_path, 'rb') as f:
             s = base64.b64encode(f.read())
-        input_data = json.dumps(s.decode('ascii'))
+        # input_data = json.dumps(s.decode('ascii'))
+        input_data = s.decode('ascii')
         my_list.append([input_data])
     df = pd.DataFrame(my_list, columns=['image_string'])
     for i in range(df.shape[0]):

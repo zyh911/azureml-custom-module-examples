@@ -156,7 +156,7 @@ class ICDenseNet:
     def run(self, input, meta=None):
         my_list = []
         for i in range(input.shape[0]):
-            temp_string = json.loads(input.iloc[i]['image_string'])
+            temp_string = input.iloc[i]['image_string']
             if temp_string.startswith('data:'):
                 my_index = temp_string.find('base64,')
                 temp_string = temp_string[my_index+7:]

@@ -184,7 +184,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
                                                                   valid_error))
 
     model = DenseNet()
-    model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth')))
+    model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth'), map_location='cpu'))
     if torch.cuda.is_available():
         model = model.cuda()
         if torch.cuda.device_count() > 1:
