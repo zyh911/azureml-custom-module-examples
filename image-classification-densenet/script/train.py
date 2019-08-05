@@ -125,7 +125,8 @@ def train_epoch(model, loader, optimizer, epoch, epochs, print_freq=1):
 
 
 def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, lr=0.1,
-          wd=0.0001, momentum=0.9, random_seed=None):
+          wd=0.0001, momentum=0.9, random_seed=None, growth_rate=12, block_config=[16, 16, 16], num_classes=10,
+          memory_efficient=False):
     if random_seed is not None:
         if torch.cuda.is_available():
             if torch.cuda.device_count() > 1:
@@ -182,8 +183,9 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
             f.write('{:3d},{:.6f},{:.6f},{:.5f},{:.5f},\n'.format(epoch + 1, train_loss,
                                                                   train_error, valid_loss,
                                                                   valid_error))
-    model = DenseNet()
-    model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth')))
+    model = DenseNet(growth_rate=growth_rate, block_config=block_config, num_classes=10,
+                     memory_efficient=memory_efficient)
+    model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth'), map_location='cpu'))
     if torch.cuda.is_available():
         model = model.cuda()
         if torch.cuda.device_count() > 1:
@@ -195,8 +197,8 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
     print('Final test error: {:.4f}'.format(test_error))
 
 
-def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_rate=12,
-             memory_efficient=False, valid_size=5000, epochs=3, batch_size=64, random_seed=None):
+def entrance(data_path='dataset', save_path='saved_model', model_depth=100, growth_rate=12,
+             memory_efficient=False, valid_size=5000, epochs=1, batch_size=64, random_seed=None):
     if (model_depth - 4) % 6:
         raise Exception('Invalid model_depth')
     block_config = [(model_depth - 4) // 6 for _ in range(3)]
@@ -214,7 +216,7 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
         transforms.Normalize(mean=mean, std=stdv),
     ])
 
-    train_set = datasets.CIFAR10(data_path, train=True, transform=train_transforms, download=False)
+    train_set = datasets.CIFAR10(data_path, train=True, transform=train_transforms, download=True)
     test_set = datasets.CIFAR10(data_path, train=False, transform=test_transforms, download=False)
 
     if valid_size > 0:
@@ -233,7 +235,9 @@ def entrance(data_path='dataset', save_path='outputs', model_depth=100, growth_r
     os.makedirs(save_path, exist_ok=True)
 
     train(model=model, train_set=train_set, valid_set=valid_set, test_set=test_set,
-          save_path=save_path, epochs=epochs, batch_size=batch_size, random_seed=random_seed)
+          save_path=save_path, epochs=epochs, batch_size=batch_size, random_seed=random_seed,
+          growth_rate=growth_rate, block_config=block_config, num_classes=10,
+          memory_efficient=memory_efficient)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
