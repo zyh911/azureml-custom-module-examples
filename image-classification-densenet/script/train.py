@@ -173,10 +173,16 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
             if valid_error < best_error:
                 best_error = valid_error
                 print('New best error: {:.4f}'.format(best_error))
-                torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
+                if torch.cuda.device_count() > 1:
+                    torch.save(model.module.state_dict(), os.path.join(save_path, 'model.pth'))
+                else:
+                    torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
 
         else:
-            torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
+            if torch.cuda.device_count() > 1:
+                torch.save(model.module.state_dict(), os.path.join(save_path, 'model.pth'))
+            else:
+                torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
 
         # Log results
         with open(os.path.join(save_path, 'results.csv'), 'a') as f:
