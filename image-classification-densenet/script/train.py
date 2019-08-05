@@ -183,7 +183,7 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size, 
             f.write('{:3d},{:.6f},{:.6f},{:.5f},{:.5f},\n'.format(epoch + 1, train_loss,
                                                                   train_error, valid_loss,
                                                                   valid_error))
-    model = DenseNet(growth_rate=growth_rate, block_config=block_config, num_classes=10,
+    model = DenseNet(growth_rate=growth_rate, block_config=block_config, num_classes=num_classes,
                      memory_efficient=memory_efficient)
     model.load_state_dict(torch.load(os.path.join(save_path, 'model.pth'), map_location='cpu'))
     if torch.cuda.is_available():
