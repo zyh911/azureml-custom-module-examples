@@ -33,13 +33,13 @@ def val(args, val_loader, model, criterion):
 
     total_batches = len(val_loader)
     for i, (input_var, target_var) in enumerate(val_loader):
-        if i == 10:
-            break
         start_time = time.time()
 
         if args.use_gpu and torch.cuda.is_available():
             input_var = input_var.cuda()
             target_var = target_var.cuda()
+
+        target_var[target_var == 255] = 19
 
         # run the mdoel
         output = model(input_var)
@@ -47,14 +47,14 @@ def val(args, val_loader, model, criterion):
         # compute the loss
         loss = criterion(output, target_var)
 
-        epoch_loss.append(loss.data[0])
+        epoch_loss.append(loss.data.item())
 
         time_taken = time.time() - start_time
 
         # compute the confusion matrix
         iouEvalVal.addBatch(output.max(1)[1].data, target_var.data)
 
-        print('[%d/%d] loss: %.3f time: %.2f' % (i, total_batches, loss.data[0], time_taken))
+        print('[%d/%d] loss: %.3f time: %.2f' % (i, total_batches, loss.data.item(), time_taken))
 
     average_epoch_loss_val = sum(epoch_loss) / len(epoch_loss)
 
@@ -82,8 +82,6 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
 
     total_batches = len(train_loader)
     for i, (input_var, target_var) in enumerate(train_loader):
-        if i == 10:
-            break
         start_time = time.time()
 
         if args.use_gpu and torch.cuda.is_available():
