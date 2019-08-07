@@ -35,7 +35,7 @@ def val(args, val_loader, model, criterion):
     for i, (input, target) in enumerate(val_loader):
         start_time = time.time()
 
-        if args.onGPU == True:
+        if torch.cuda.is_available():
             input = input.cuda()
             target = target.cuda()
 
@@ -85,7 +85,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
     for i, (input, target) in enumerate(train_loader):
         start_time = time.time()
 
-        if args.onGPU == True:
+        if torch.cuda.is_available():
             input = input.cuda()
             target = target.cuda()
 
@@ -166,11 +166,15 @@ def trainValidateSegmentation(args):
     p = args.p
     # load the model
     if args.model_type == 'ESPNet-C':
+        scaleIn = 8
         model = ESPNet_Encoder(args.classes, p=p, q=q)
-        args.save_dir = args.savedir + '_enc_' + str(p) + '_' + str(q) + '/'
     else:
-        model = ESPNet(args.classes, p=p, q=q, encoderFile=args.pretrained)
-        args.save_dir = args.savedir + '_dec_' + str(p) + '_' + str(q) + '/'
+        scaleIn = 1
+        if args.pretrained:
+            model = ESPNet(args.classes, p=p, q=q,
+                           encoderFile=os.path.join(args.model_path, 'espnet_p_' + str(p) + '_q_' + str(q) + '.pth'))
+        else:
+            model = ESPNet(args.classes, p=p, q=q)
 
     if torch.cuda.is_available():
         model = model.cuda()
@@ -178,20 +182,20 @@ def trainValidateSegmentation(args):
             model = torch.nn.DataParallel(model).cuda()
 
     # create the directory if not exist
-    if not os.path.exists(args.savedir):
-        os.mkdir(args.savedir)
+    if not os.path.exists(args.save_path):
+        os.mkdir(args.save_path)
 
     total_paramters = netParams(model)
     print('Total network parameters: ' + str(total_paramters))
 
     # define optimization criteria
     weight = torch.from_numpy(data['classWeights'])  # convert the numpy array to torch
-    if args.onGPU:
+    if torch.cuda.is_available():
         weight = weight.cuda()
 
     criteria = CrossEntropyLoss2d(weight)  # weight
 
-    if args.onGPU:
+    if torch.cuda.is_available():
         criteria = criteria.cuda()
 
     print('Data statistics')
@@ -205,8 +209,7 @@ def trainValidateSegmentation(args):
         myTransforms.RandomCropResize(32),
         myTransforms.RandomFlip(),
         # myTransforms.RandomCrop(64).
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        myTransforms.ToTensor(scaleIn),
     ])
 
     trainDataset_scale1 = myTransforms.Compose([
@@ -215,8 +218,7 @@ def trainValidateSegmentation(args):
         myTransforms.RandomCropResize(100),
         myTransforms.RandomFlip(),
         # myTransforms.RandomCrop(64),
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        myTransforms.ToTensor(scaleIn),
     ])
 
     trainDataset_scale2 = myTransforms.Compose([
@@ -225,8 +227,7 @@ def trainValidateSegmentation(args):
         myTransforms.RandomCropResize(100),
         myTransforms.RandomFlip(),
         # myTransforms.RandomCrop(64),
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        myTransforms.ToTensor(scaleIn),
     ])
 
     trainDataset_scale3 = myTransforms.Compose([
@@ -235,8 +236,7 @@ def trainValidateSegmentation(args):
         myTransforms.RandomCropResize(32),
         myTransforms.RandomFlip(),
         # myTransforms.RandomCrop(64),
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        myTransforms.ToTensor(scaleIn),
     ])
 
     trainDataset_scale4 = myTransforms.Compose([
@@ -244,16 +244,14 @@ def trainValidateSegmentation(args):
         myTransforms.Scale(512, 256),
         # myTransforms.RandomCropResize(20),
         myTransforms.RandomFlip(),
-        # myTransforms.RandomCrop(64).
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        # myTransforms.RandomCrop(64),
+        myTransforms.ToTensor(scaleIn),
     ])
 
     valDataset = myTransforms.Compose([
         myTransforms.Normalize(mean=data['mean'], std=data['std']),
         myTransforms.Scale(1024, 512),
-        myTransforms.ToTensor(args.scaleIn),
-        #
+        myTransforms.ToTensor(scaleIn),
     ])
 
     # since we training from scratch, we create data loaders at different scales
@@ -283,30 +281,15 @@ def trainValidateSegmentation(args):
         MyDataset(data['valIm'], data['valAnnot'], transform=valDataset),
         batch_size=args.batch_size + 4, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
-    if args.onGPU:
+    if torch.cuda.is_available():
         cudnn.benchmark = True
 
     start_epoch = 0
 
-    if args.resume:
-        if os.path.isfile(args.resumeLoc):
-            print("=> loading checkpoint '{}'".format(args.resume))
-            checkpoint = torch.load(args.resumeLoc)
-            start_epoch = checkpoint['epoch']
-            # args.lr = checkpoint['lr']
-            model.load_state_dict(checkpoint['state_dict'])
-            print("=> loaded checkpoint '{}' (epoch {})"
-                  .format(args.resume, checkpoint['epoch']))
-        else:
-            print("=> no checkpoint found at '{}'".format(args.resume))
-
-    logFileLoc = args.savedir + args.logFile
-    if os.path.isfile(logFileLoc):
-        logger = open(logFileLoc, 'a')
-    else:
-        logger = open(logFileLoc, 'w')
-        logger.write("Parameters: %s" % (str(total_paramters)))
-        logger.write("\n%s\t%s\t%s\t%s\t%s\t" % ('Epoch', 'Loss(Tr)', 'Loss(val)', 'mIOU (tr)', 'mIOU (val'))
+    logFileLoc = os.path.join(args.save_path, args.logFile)
+    logger = open(logFileLoc, 'w')
+    logger.write("Parameters: %s" % (str(total_paramters)))
+    logger.write("\n%s\t%s\t%s\t%s\t%s\t" % ('Epoch', 'Loss(Tr)', 'Loss(val)', 'mIOU (tr)', 'mIOU (val'))
     logger.flush()
 
     optimizer = torch.optim.Adam(model.parameters(), args.lr, (0.9, 0.999), eps=1e-08, weight_decay=5e-4)
@@ -343,13 +326,13 @@ def trainValidateSegmentation(args):
             'iouTr': mIOU_tr,
             'iouVal': mIOU_val,
             'lr': lr
-        }, args.savedir + 'checkpoint.pth.tar')
+        }, args.save_path + 'checkpoint.pth.tar')
 
         # save the model also
-        model_file_name = args.savedir + '/model_' + str(epoch + 1) + '.pth'
+        model_file_name = args.save_path + '/model_' + str(epoch + 1) + '.pth'
         torch.save(model.state_dict(), model_file_name)
 
-        with open(args.savedir + 'acc_' + str(epoch) + '.txt', 'w') as log:
+        with open(args.save_path + 'acc_' + str(epoch) + '.txt', 'w') as log:
             log.write(
                 "\nEpoch: %d\t Overall Acc (Tr): %.4f\t Overall Acc (Val): %.4f\t mIOU (Tr): %.4f\t mIOU (Val): %.4f" % (
                 epoch, overall_acc_tr, overall_acc_val, mIOU_tr, mIOU_val))
@@ -375,23 +358,20 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--model_type', default='ESPNet', help='Model name')
     parser.add_argument('--data_path', default='script/dataset/city', help='Data directory')
-    parser.add_argument('--model_path', default='script/dataset/city', help='Data directory')
-    parser.add_argument('--inWidth', type=int, default=1024, help='Width of RGB image')
-    parser.add_argument('--inHeight', type=int, default=512, help='Height of RGB image')
-    parser.add_argument('--scaleIn', type=int, default=8, help='For ESPNet-C, scaleIn=8. For ESPNet, scaleIn=1')
+    parser.add_argument('--model_path', default='script/pretrained/encoder', help='Model directory')
     parser.add_argument('--max_epochs', type=int, default=300, help='Max. number of epochs')
     parser.add_argument('--num_workers', type=int, default=4, help='No. of parallel threads')
     parser.add_argument('--batch_size', type=int, default=6, help='Batch size. 12 for ESPNet-C and 6 for ESPNet. '
                                                                   'Change as per the GPU memory')
     parser.add_argument('--step_loss', type=int, default=100, help='Decrease learning rate after how many epochs.')
     parser.add_argument('--lr', type=float, default=5e-4, help='Initial learning rate')
-    parser.add_argument('--save_dir', default='./results_enc_', help='directory to save the results')
+    parser.add_argument('--save_path', default='scrip/saved_model', help='directory to save the results')
     parser.add_argument('--classes', type=int, default=20, help='No of classes in the dataset. 20 for cityscapes')
     parser.add_argument('--cached_data_file', default='city.p', help='Cached file name')
     parser.add_argument('--logFile', default='trainValLog.txt', help='File that stores the training and validation logs')
-    parser.add_argument('--pretrained', default='../pretrained/encoder/espnet_p_2_q_8.pth',
-                        help='Pretrained ESPNet-C weights. '
-                             'Only used when training ESPNet')
+    parser.add_argument('--pretrained', default=False, type=bool,
+                        help='Pretrained ESPNet-C weights.'
+                             'Only used when training ESPNet.')
     parser.add_argument('--p', default=2, type=int, help='depth multiplier')
     parser.add_argument('--q', default=8, type=int, help='depth multiplier')
 
