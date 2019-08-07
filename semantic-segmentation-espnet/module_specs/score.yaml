@@ -13,17 +13,19 @@ inputs:
   description: data_path
 - name: Model Type
   type: Mode
-  default: 'densenet201'
+  default: 'ESPNet'
   description: model_type
   options:
-    - 'densenet201'
-    - 'densenet169'
-    - 'densenet161'
-    - 'densenet121'
-- name: Memory efficient
-  type: Boolean
-  default: False
-  description: memory_efficient
+    - 'ESPNet'
+    - 'ESPNet-C'
+- name: P
+  type: Int
+  default: 2
+  description: p
+- name: Q
+  type: Int
+  default: 8
+  description: q
 outputs:
 - name: Save path
   type: TabularDataFolder
@@ -41,10 +43,10 @@ implementation:
       - python=3.6.3
       - pip:
         - --extra-index-url=https://test.pypi.org/simple
-        - fire==0.1.3
         - azureml-core==1.0.48
         - alghost==0.0.70
         - pandas==0.24.2
+        - opencv-python==4.1.0.25
         - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
         - https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
         - pillow==6.0.0
@@ -61,8 +63,10 @@ implementation:
     - inputValue: Data path
     - --model_type
     - inputValue: Model Type
-    - --memory_efficient
-    - inputValue: Memory efficient
+    - -p
+    - inputValue: P
+    - -q
+    - inputValue: Q
     - --save_path
     - outputPath: Save path
   invoking:
