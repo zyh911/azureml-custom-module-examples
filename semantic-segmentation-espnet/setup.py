@@ -2,9 +2,9 @@ from setuptools import setup
 
 
 setup(
-    name='image-classification-finetune',
+    name='semantic-segmentation-espnet',
     version='0.0.1',
-    description='DenseNet Model for Image Classification Finetune Task',
+    description='ESPNet Model for Semantic Segmentation Task',
     packages=['script'],
     author='Yuhang Zhao',
     license='MIT',

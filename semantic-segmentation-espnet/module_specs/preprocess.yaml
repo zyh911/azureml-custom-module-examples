@@ -1,5 +1,5 @@
-name: Image Finetune Preprocess
-id: 490e2c5a-bcb3-48f4-89de-49b6c511eb64
+name: ESPNet Preprocess
+id: e551e0e4-73a9-4402-8a89-f0e8ffc2ae7e
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
 inputs:
@@ -30,7 +30,7 @@ implementation:
         - pandas==0.24.2
         - pillow==6.0.0
         - pyarrow==0.14.0
-        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-finetune
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=semantic-segmentation-espnet
     command:
     - python
     - -m
@@ -42,5 +42,5 @@ implementation:
     - outputPath: Save path
   invoking:
     module: script.score
-    class: ICDenseNet
+    class: SSESPNet
     func: run

@@ -1,41 +1,43 @@
-name: Image Finetune Training
-id: 034d29ec-d74e-4f3a-96eb-33365e53e77b
+name: ESPNet Training
+id: c619d220-f6f9-49aa-8084-b941ff702525
 category: Machine Learning\Train
-description: Creates a DenseNet for image classification and trains it
+description: Creates a ESPNet for semantic segmentation and trains it
 inputs:
 - name: Data path
   type: GenericFolder
   port: True
   description: data_path
+- name: Model path
+  type: ModelFolder
+  port: True
+  description: model_path
 - name: Model Type
   type: Mode
-  default: 'densenet201'
+  default: 'ESPNet'
   description: model_type
   options:
-    - 'densenet201'
-    - 'densenet169'
-    - 'densenet161'
-    - 'densenet121'
+    - 'ESPNet'
+    - 'ESPNet-C'
 - name: Pretrained
   type: Boolean
   default: True
   description: pretrained
-- name: Memory efficient
-  type: Boolean
-  default: False
-  description: memory_efficient
-- name: Epochs
+- name: Max epochs
   type: Int
   default: 10
-  description: epochs
+  description: max_epochs
 - name: Batch size
   type: Int
-  default: 4
+  default: 6
   description: batch_size
-- name: Random seed
+- name: P
   type: Int
-  default: 1
-  description: random_seed
+  default: 2
+  description: p
+- name: Q
+  type: Int
+  default: 8
+  description: q
 outputs:
 - name: Save path
   type: ModelFolder
@@ -56,7 +58,7 @@ implementation:
         - scipy==1.2.1
         - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
         - https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
-        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-finetune
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=semantic-segmentation-espnet
     command:
     - python
     - -m
@@ -64,17 +66,19 @@ implementation:
     args:
     - --data_path
     - inputValue: Data path
+    - --model_path
+    - inputValue: Model path
     - --model_type
     - inputValue: Model Type
     - --pretrained
     - inputValue: Pretrained
-    - --memory_efficient
-    - inputValue: Memory efficient
-    - --epochs
-    - inputValue: Epochs
+    - --max_epochs
+    - inputValue: Max epochs
     - --batch_size
     - inputValue: Batch size
-    - --random_seed
-    - inputValue: Random seed
+    - --p
+    - inputValue: P
+    - --q
+    - inputValue: Q
     - --save_path
     - outputPath: Save path
