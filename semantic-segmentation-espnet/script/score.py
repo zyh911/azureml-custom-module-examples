@@ -21,26 +21,26 @@ from .Model import ESPNet_Encoder, ESPNet
 class SSESPNet:
     def __init__(self, model_path='saved_model', meta={}):
         self.mean = [72.3923111, 82.90893555, 73.15840149]
-        self.std = [45.3192215, 46.15289307, 44.91483307]
+        self.stdv = [45.3192215, 46.15289307, 44.91483307]
         self.inference_transforms = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
+        self.up = None
         if meta['Model Type'] == 'ESPNet':
             self.model = ESPNet(meta['Classes'], p=meta['P'], q=meta['Q'])
         else:
             self.model = ESPNet_Encoder(meta['Classes'], p=meta['P'], q=meta['Q'])
+            self.up = torch.nn.Upsample(scale_factor=8, mode='bilinear')
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
+            if self.up:
+                self.up = self.up.cuda()
             if torch.cuda.device_count() > 1:
                 self.model = torch.nn.DataParallel(self.model).cuda()
 
         self.model.eval()
-        self.classes = my_dict
-        self.print_freq = 1
 
     def run(self, input, meta=None):
         my_list = []
@@ -58,9 +58,8 @@ class SSESPNet:
 
             with torch.no_grad():
                 output = self.model(input_tensor)
-                softmax = nn.Softmax(dim=1)
-                pred_probs = softmax(output).cpu().numpy()[0]
-                index = torch.argmax(output, 1)[0].cpu().item()
+                if self.up:
+                    output = self.up(output)
 
             result = {'label': self.classes[index], 'probability': str(pred_probs[index])}
             print(self.classes[index])
