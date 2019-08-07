@@ -170,7 +170,7 @@ def trainValidateSegmentation(args):
 
     # create the directory if not exist
     if not os.path.exists(args.save_path):
-        os.mkdirs(args.save_path)
+        os.makedirs(args.save_path)
 
     total_paramters = netParams(model)
     print('Total network parameters: ' + str(total_paramters))
