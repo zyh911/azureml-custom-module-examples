@@ -30,6 +30,10 @@ inputs:
   type: Int
   default: 6
   description: batch_size
+- name: Use gpu
+  type: Boolean
+  default: True
+  description: use_gpu
 - name: P
   type: Int
   default: 2
@@ -76,9 +80,11 @@ implementation:
     - inputValue: Max epochs
     - --batch_size
     - inputValue: Batch size
-    - --p
+    - --use_gpu
+    - inputValue: Use gpu
+    - -p
     - inputValue: P
-    - --q
+    - -q
     - inputValue: Q
     - --save_path
     - outputPath: Save path

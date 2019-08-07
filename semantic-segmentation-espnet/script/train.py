@@ -2,9 +2,9 @@ import os
 import pickle
 import time
 from argparse import ArgumentParser
-import torch
+import json
 
-from torch.autograd import Variable
+import torch
 import torch.optim.lr_scheduler
 import torch.backends.cudnn as cudnn
 
@@ -17,14 +17,14 @@ from .IOUEval import iouEval
 
 
 def val(args, val_loader, model, criterion):
-    '''
+    """
     :param args: general arguments
     :param val_loader: loaded for validation dataset
     :param model: model
     :param criterion: loss function
     :return: average epoch loss, overall pixel-wise accuracy, per class accuracy, per class iu, and mIOU
-    '''
-    #switch to evaluation mode
+    """
+    # switch to evaluation mode
     model.eval()
 
     iouEvalVal = iouEval(args.classes)
@@ -32,15 +32,14 @@ def val(args, val_loader, model, criterion):
     epoch_loss = []
 
     total_batches = len(val_loader)
-    for i, (input, target) in enumerate(val_loader):
+    for i, (input_var, target_var) in enumerate(val_loader):
+        if i == 10:
+            break
         start_time = time.time()
 
-        if torch.cuda.is_available():
-            input = input.cuda()
-            target = target.cuda()
-
-        input_var = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
+        if args.use_gpu and torch.cuda.is_available():
+            input_var = input_var.cuda()
+            target_var = target_var.cuda()
 
         # run the mdoel
         output = model(input_var)
@@ -65,7 +64,7 @@ def val(args, val_loader, model, criterion):
 
 
 def train(args, train_loader, model, criterion, optimizer, epoch):
-    '''
+    """
     :param args: general arguments
     :param train_loader: loaded for training dataset
     :param model: model
@@ -73,7 +72,7 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
     :param optimizer: optimization algo, such as ADAM or SGD
     :param epoch: epoch number
     :return: average epoch loss, overall pixel-wise accuracy, per class accuracy, per class iu, and mIOU
-    '''
+    """
     # switch to train mode
     model.train()
 
@@ -82,15 +81,15 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
     epoch_loss = []
 
     total_batches = len(train_loader)
-    for i, (input, target) in enumerate(train_loader):
+    for i, (input_var, target_var) in enumerate(train_loader):
+        if i == 10:
+            break
         start_time = time.time()
 
-        if torch.cuda.is_available():
-            input = input.cuda()
-            target = target.cuda()
+        if args.use_gpu and torch.cuda.is_available():
+            input_var = input_var.cuda()
+            target_var = target_var.cuda()
 
-        input_var = torch.autograd.Variable(input)
-        target_var = torch.autograd.Variable(target)
         target_var[target_var == 255] = 19
 
         # run the mdoel
@@ -119,16 +118,6 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
     return average_epoch_loss_train, overall_acc, per_class_acc, per_class_iu, mIOU
 
 
-def save_checkpoint(state, filenameCheckpoint='checkpoint.pth.tar'):
-    '''
-    helper function to save the checkpoint
-    :param state: model state
-    :param filenameCheckpoint: where to save the checkpoint
-    :return: nothing
-    '''
-    torch.save(state, filenameCheckpoint)
-
-
 def netParams(model):
     '''
     helper function to see total network parameters
@@ -154,7 +143,7 @@ def trainValidateSegmentation(args):
         '''
     # check if processed data file exists or not
     if not os.path.isfile(args.cached_data_file):
-        dataLoad = LoadData(args.data_dir, args.classes, args.cached_data_file)
+        dataLoad = LoadData(args.data_path, args.classes, args.cached_data_file)
         data = dataLoad.processData()
         if data is None:
             print('Error while pickling data. Please check.')
@@ -176,7 +165,7 @@ def trainValidateSegmentation(args):
         else:
             model = ESPNet(args.classes, p=p, q=q)
 
-    if torch.cuda.is_available():
+    if args.use_gpu and torch.cuda.is_available():
         model = model.cuda()
         if torch.cuda.device_count() > 1:
             model = torch.nn.DataParallel(model).cuda()
@@ -190,12 +179,12 @@ def trainValidateSegmentation(args):
 
     # define optimization criteria
     weight = torch.from_numpy(data['classWeights'])  # convert the numpy array to torch
-    if torch.cuda.is_available():
+    if args.use_gpu and torch.cuda.is_available():
         weight = weight.cuda()
 
     criteria = CrossEntropyLoss2d(weight)  # weight
 
-    if torch.cuda.is_available():
+    if args.use_gpu and torch.cuda.is_available():
         criteria = criteria.cuda()
 
     print('Data statistics')
@@ -281,7 +270,7 @@ def trainValidateSegmentation(args):
         MyDataset(data['valIm'], data['valAnnot'], transform=valDataset),
         batch_size=args.batch_size + 4, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
-    if torch.cuda.is_available():
+    if args.use_gpu and torch.cuda.is_available():
         cudnn.benchmark = True
 
     start_epoch = 0
@@ -316,41 +305,40 @@ def trainValidateSegmentation(args):
         # evaluate on validation set
         lossVal, overall_acc_val, per_class_acc_val, per_class_iu_val, mIOU_val = val(args, valLoader, model, criteria)
 
-        save_checkpoint({
-            'epoch': epoch + 1,
-            'arch': str(model),
-            'state_dict': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'lossTr': lossTr,
-            'lossVal': lossVal,
-            'iouTr': mIOU_tr,
-            'iouVal': mIOU_val,
-            'lr': lr
-        }, args.save_path + 'checkpoint.pth.tar')
-
-        # save the model also
-        model_file_name = args.save_path + '/model_' + str(epoch + 1) + '.pth'
-        torch.save(model.state_dict(), model_file_name)
-
-        with open(args.save_path + 'acc_' + str(epoch) + '.txt', 'w') as log:
-            log.write(
-                "\nEpoch: %d\t Overall Acc (Tr): %.4f\t Overall Acc (Val): %.4f\t mIOU (Tr): %.4f\t mIOU (Val): %.4f" % (
-                epoch, overall_acc_tr, overall_acc_val, mIOU_tr, mIOU_val))
-            log.write('\n')
-            log.write('Per Class Training Acc: ' + str(per_class_acc_tr))
-            log.write('\n')
-            log.write('Per Class Validation Acc: ' + str(per_class_acc_val))
-            log.write('\n')
-            log.write('Per Class Training mIOU: ' + str(per_class_iu_tr))
-            log.write('\n')
-            log.write('Per Class Validation mIOU: ' + str(per_class_iu_val))
+        # save the model
+        if args.use_gpu and torch.cuda.device_count() > 1:
+            torch.save(model.module.state_dict(), os.path.join(args.save_path, 'model.pth'))
+        else:
+            torch.save(model.state_dict(), os.path.join(args.save_path, 'model.pth'))
 
         logger.write("\n%d\t\t%.4f\t\t%.4f\t\t%.4f\t\t%.4f\t\t%.7f" % (epoch, lossTr, lossVal, mIOU_tr, mIOU_val, lr))
         logger.flush()
         print("Epoch : " + str(epoch) + ' Details')
-        print("\nEpoch No.: %d\tTrain Loss = %.4f\tVal Loss = %.4f\t mIOU(tr) = %.4f\t mIOU(val) = %.4f" % (
-        epoch, lossTr, lossVal, mIOU_tr, mIOU_val))
+        print("\nEpoch No.: %d\tTrain Loss = %.4f\tVal Loss = %.4f\t mIOU(tr) = %.4f\t mIOU(val) = %.4f" % (epoch, lossTr, lossVal, mIOU_tr, mIOU_val))
     logger.close()
+    # Dump data_type.json as a work around until SMT deploys
+    dct = {
+        'Id': 'ILearnerDotNet',
+        'Name': 'ILearner .NET file',
+        'ShortName': 'Model',
+        'Description': 'A .NET serialized ILearner',
+        'IsDirectory': False,
+        'Owner': 'Microsoft Corporation',
+        'FileExtension': 'ilearner',
+        'ContentType': 'application/octet-stream',
+        'AllowUpload': False,
+        'AllowPromotion': False,
+        'AllowModelPromotion': True,
+        'AuxiliaryFileExtension': None,
+        'AuxiliaryContentType': None
+    }
+    with open(os.path.join(args.save_path, 'data_type.json'), 'w') as f:
+        json.dump(dct, f)
+    # Dump data.ilearner as a work around until data type design
+    visualization = os.path.join(args.save_path, 'data.ilearner')
+    with open(visualization, 'w') as file:
+        file.writelines('{}')
+    print('This experiment has been completed.')
 
 
 if __name__ == '__main__':
@@ -361,18 +349,19 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', default='script/pretrained/encoder', help='Model directory')
     parser.add_argument('--max_epochs', type=int, default=300, help='Max. number of epochs')
     parser.add_argument('--num_workers', type=int, default=4, help='No. of parallel threads')
-    parser.add_argument('--batch_size', type=int, default=6, help='Batch size. 12 for ESPNet-C and 6 for ESPNet. '
+    parser.add_argument('--batch_size', type=int, default=4, help='Batch size. 12 for ESPNet-C and 6 for ESPNet. '
                                                                   'Change as per the GPU memory')
     parser.add_argument('--step_loss', type=int, default=100, help='Decrease learning rate after how many epochs.')
     parser.add_argument('--lr', type=float, default=5e-4, help='Initial learning rate')
-    parser.add_argument('--save_path', default='scrip/saved_model', help='directory to save the results')
+    parser.add_argument('--save_path', default='script/saved_model', help='directory to save the results')
     parser.add_argument('--classes', type=int, default=20, help='No of classes in the dataset. 20 for cityscapes')
     parser.add_argument('--cached_data_file', default='city.p', help='Cached file name')
     parser.add_argument('--logFile', default='trainValLog.txt', help='File that stores the training and validation logs')
     parser.add_argument('--pretrained', default=False, type=bool,
-                        help='Pretrained ESPNet-C weights.'
+                        help='Whether using pretrained models.'
                              'Only used when training ESPNet.')
-    parser.add_argument('--p', default=2, type=int, help='depth multiplier')
-    parser.add_argument('--q', default=8, type=int, help='depth multiplier')
+    parser.add_argument('--use_gpu', default=False, type=bool)
+    parser.add_argument('-p', default=2, type=int, help='depth multiplier')
+    parser.add_argument('-q', default=8, type=int, help='depth multiplier')
 
     trainValidateSegmentation(parser.parse_args())
