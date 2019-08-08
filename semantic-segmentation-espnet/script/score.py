@@ -49,10 +49,12 @@ class SSESPNet:
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
         self.up = None
+        self.p = int(meta['P'])
+        self.q = int(meta['Q'])
         if meta['Model Type'] == 'ESPNet':
-            self.model = ESPNet(self.classes, p=meta['P'], q=meta['Q'])
+            self.model = ESPNet(classes=self.classes, p=self.p, q=self.q)
         else:
-            self.model = ESPNet_Encoder(self.classes, p=meta['P'], q=meta['Q'])
+            self.model = ESPNet_Encoder(self.classes, p=self.p, q=self.q)
             self.up = torch.nn.Upsample(scale_factor=8, mode='bilinear')
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
@@ -67,50 +69,39 @@ class SSESPNet:
     def run(self, input, meta=None):
         my_list = []
         for i in range(input.shape[0]):
-            print(1)
             temp_string = input.iloc[i]['image_string']
             if temp_string.startswith('data:'):
                 my_index = temp_string.find('base64,')
                 temp_string = temp_string[my_index+7:]
-            print(2)
             temp = base64.b64decode(temp_string)
             img = Image.open(BytesIO(temp))
-            print(3)
             input_tensor = self.inference_transforms(img)
             input_tensor = input_tensor.unsqueeze(0)
-            print(4)
             if torch.cuda.is_available():
                 input_tensor = input_tensor.cuda()
 
             with torch.no_grad():
-                print(5)
                 output = self.model(input_tensor)
                 if self.up:
                     output = self.up(output)
                 output = torch.argmax(output, 1)[0].cpu().numpy()
-                print(6)
                 resultImg = np.zeros((output.shape[0], output.shape[1], 3), dtype=np.uint8)
                 for idx in range(len(self.pallete)):
                     resultImg[output == idx] = self.pallete[idx]
-                print(7)
                 resultImg1 = Image.fromarray(resultImg)
                 resultImg2 = Image.blend(img, resultImg1, 0.5)
                 imgByteArr1 = BytesIO()
                 imgByteArr2 = BytesIO()
                 resultImg1.save(imgByteArr1, format='PNG')
-                print(8)
                 imgBytes1 = imgByteArr1.getvalue()
                 s1 = base64.b64encode(imgBytes1)
                 s1 = s1.decode('ascii')
-                print(9)
                 resultImg2.save(imgByteArr2, format='PNG')
                 imgBytes2 = imgByteArr2.getvalue()
                 s2 = base64.b64encode(imgBytes2)
-                print(10)
                 s2 = s2.decode('ascii')
                 s1 = 'data:image/png;base64,' + s1
                 s2 = 'data:image/png;base64,' + s2
-                print(11)
 
             my_list.append([s1, s2])
         df = pd.DataFrame(my_list, columns=['mask', 'fusion'])
@@ -129,7 +120,7 @@ class SSESPNet:
 
 
 def test(args):
-    meta = {'Model Type': args.model_type, 'P': args.p, 'Q': args.q}
+    meta = {'Model Type': args.model_type, 'P': str(args.p), 'Q': str(args.q)}
     ssespnet = SSESPNet(args.model_path, meta)
     ssespnet.evaluate(data_path=args.data_path, save_path=args.save_path)
 

@@ -50,14 +50,18 @@ class ICDenseNet:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
-        if meta['Model Type'] == 'densenet201':
-            self.model = densenet201(pretrained=False, memory_efficient=meta['Memory efficient'])
-        elif meta['Model Type'] == 'densenet169':
-            self.model = densenet169(pretrained=False, memory_efficient=meta['Memory efficient'])
-        elif meta['Model Type'] == 'densenet161':
-            self.model = densenet161(pretrained=False, memory_efficient=meta['Memory efficient'])
+        if meta['Memory efficient'] == 'True':
+            self.memory_efficient = True
         else:
-            self.model = densenet121(pretrained=False, memory_efficient=meta['Memory efficient'])
+            self.memory_efficient = False
+        if meta['Model Type'] == 'densenet201':
+            self.model = densenet201(pretrained=False, memory_efficient=self.memory_efficient)
+        elif meta['Model Type'] == 'densenet169':
+            self.model = densenet169(pretrained=False, memory_efficient=self.memory_efficient)
+        elif meta['Model Type'] == 'densenet161':
+            self.model = densenet161(pretrained=False, memory_efficient=self.memory_efficient)
+        else:
+            self.model = densenet121(pretrained=False, memory_efficient=self.memory_efficient)
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -197,7 +201,7 @@ class ICDenseNet:
 
 def test(model_path='saved_model', data_path='outputs', save_path='outputs2', model_type='densenet201',
          memory_efficient=False):
-    meta = {'Model Type': model_type, 'Memory efficient': memory_efficient}
+    meta = {'Model Type': model_type, 'Memory efficient': str(memory_efficient)}
     icdensenet = ICDenseNet(model_path, meta)
     icdensenet.evaluate_new(data_path=data_path, save_path=save_path)
 
