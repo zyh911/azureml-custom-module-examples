@@ -259,26 +259,26 @@ class ESPNet_Encoder(nn.Module):
         self.sample2 = InputProjectionA(2)
 
         self.b1 = BR(16 + 3)
-        self.level2_0 = DownSamplerB(16 +3, 64)
+        self.level2_0 = DownSamplerB(16 + 3, 64)
 
         self.level2 = nn.ModuleList()
         for i in range(0, p):
-            self.level2.append(DilatedParllelResidualBlockB(64 , 64))
+            self.level2.append(DilatedParllelResidualBlockB(64, 64))
         self.b2 = BR(128 + 3)
 
         self.level3_0 = DownSamplerB(128 + 3, 128)
         self.level3 = nn.ModuleList()
         for i in range(0, q):
-            self.level3.append(DilatedParllelResidualBlockB(128 , 128))
+            self.level3.append(DilatedParllelResidualBlockB(128, 128))
         self.b3 = BR(256)
 
         self.classifier = C(256, classes, 1, 1)
 
     def forward(self, input):
-        '''
+        """
         :param input: Receives the input RGB image
         :return: the transformed feature map with spatial dimensions 1/8th of the input image
-        '''
+        """
         output0 = self.level1(input)
         inp1 = self.sample1(input)
         inp2 = self.sample2(input)
@@ -306,11 +306,12 @@ class ESPNet_Encoder(nn.Module):
         classifier = self.classifier(output2_cat)
 
         return classifier
-        
+
+
 class ESPNet(nn.Module):
-    '''
+    """
     This class defines the ESPNet network
-    '''
+    """
 
     def __init__(self, classes=20, p=2, q=3, encoderFile=None):
         '''
@@ -322,13 +323,13 @@ class ESPNet(nn.Module):
         '''
         super().__init__()
         self.encoder = ESPNet_Encoder(classes, p, q)
-        if encoderFile != None:
+        if encoderFile is not None:
             self.encoder.load_state_dict(torch.load(encoderFile))
             print('Encoder loaded!')
         # load the encoder modules
-        self.modules = []
+        self.modules_list = nn.ModuleList()
         for i, m in enumerate(self.encoder.children()):
-            self.modules.append(m)
+            self.modules_list.append(m)
 
         # light-weight decoder
         self.level3_C = C(128 + 3, classes, 1, 1)
@@ -347,34 +348,34 @@ class ESPNet(nn.Module):
         :param input: RGB image
         :return: transformed feature map
         '''
-        output0 = self.modules[0](input)
-        inp1 = self.modules[1](input)
-        inp2 = self.modules[2](input)
+        output0 = self.modules_list[0](input)
+        inp1 = self.modules_list[1](input)
+        inp2 = self.modules_list[2](input)
 
-        output0_cat = self.modules[3](torch.cat([output0, inp1], 1))
-        output1_0 = self.modules[4](output0_cat)  # down-sampled
+        output0_cat = self.modules_list[3](torch.cat([output0, inp1], 1))
+        output1_0 = self.modules_list[4](output0_cat)  # down-sampled
 
-        for i, layer in enumerate(self.modules[5]):
+        for i, layer in enumerate(self.modules_list[5]):
             if i == 0:
                 output1 = layer(output1_0)
             else:
                 output1 = layer(output1)
 
-        output1_cat = self.modules[6](torch.cat([output1, output1_0, inp2], 1))
+        output1_cat = self.modules_list[6](torch.cat([output1, output1_0, inp2], 1))
 
-        output2_0 = self.modules[7](output1_cat)  # down-sampled
-        for i, layer in enumerate(self.modules[8]):
+        output2_0 = self.modules_list[7](output1_cat)  # down-sampled
+        for i, layer in enumerate(self.modules_list[8]):
             if i == 0:
                 output2 = layer(output2_0)
             else:
                 output2 = layer(output2)
 
-        output2_cat = self.modules[9](torch.cat([output2_0, output2], 1)) # concatenate for feature map width expansion
+        output2_cat = self.modules_list[9](torch.cat([output2_0, output2], 1))  # concatenate for feature map width expansion
 
-        output2_c = self.up_l3(self.br(self.modules[10](output2_cat))) #RUM
+        output2_c = self.up_l3(self.br(self.modules_list[10](output2_cat)))  # RUM
 
         output1_C = self.level3_C(output1_cat) # project to C-dimensional space
-        comb_l2_l3 = self.up_l2(self.combine_l2_l3(torch.cat([output1_C, output2_c], 1))) #RUM
+        comb_l2_l3 = self.up_l2(self.combine_l2_l3(torch.cat([output1_C, output2_c], 1)))  # RUM
 
         concat_features = self.conv(torch.cat([comb_l2_l3, output0_cat], 1))
 

@@ -343,7 +343,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument('--model_type', default='ESPNet', help='Model name')
-    parser.add_argument('--data_path', default='script/dataset/city', help='Data directory')
+    parser.add_argument('--data_path', default='script/dataset/city_small', help='Data directory')
     parser.add_argument('--model_path', default='script/pretrained/encoder', help='Model directory')
     parser.add_argument('--max_epochs', type=int, default=300, help='Max. number of epochs')
     parser.add_argument('--num_workers', type=int, default=4, help='No. of parallel threads')
