@@ -21,10 +21,9 @@ def entrance(data_path='script/test_data', save_path='script/outputs'):
         with open(file_path, 'rb') as f:
             s = base64.b64encode(f.read())
         input_data = s.decode('ascii')
+        input_data = 'data:image/png;base64,' + input_data
         my_list.append([input_data])
     df = pd.DataFrame(my_list, columns=['image_string'])
-    for i in range(df.shape[0]):
-        df.iloc[i]['image_string'] = df.iloc[i]['image_string'].strip('"')
     os.makedirs(save_path, exist_ok=True)
     # df.to_parquet(fname=os.path.join(save_path, 'data.dataset.parquet'), engine='pyarrow')
     dt = DataTable(df)
