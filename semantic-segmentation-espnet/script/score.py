@@ -1,7 +1,6 @@
 import os
-import time
 import json
-import fire
+import numpy as np
 from PIL import Image
 from io import BytesIO
 from argparse import ArgumentParser
@@ -20,6 +19,28 @@ from .Model import ESPNet_Encoder, ESPNet
 
 class SSESPNet:
     def __init__(self, model_path='saved_model', meta={}):
+        self.pallete = [
+            [128, 64, 128],
+            [244, 35, 232],
+            [70, 70, 70],
+            [102, 102, 156],
+            [190, 153, 153],
+            [153, 153, 153],
+            [250, 170, 30],
+            [220, 220, 0],
+            [107, 142, 35],
+            [152, 251, 152],
+            [70, 130, 180],
+            [220, 20, 60],
+            [255, 0, 0],
+            [0, 0, 142],
+            [0, 0, 70],
+            [0, 60, 100],
+            [0, 80, 100],
+            [0, 0, 230],
+            [119, 11, 32],
+            [0, 0, 0]
+        ]
         self.mean = [72.3923111, 82.90893555, 73.15840149]
         self.stdv = [45.3192215, 46.15289307, 44.91483307]
         self.inference_transforms = transforms.Compose([
@@ -60,13 +81,26 @@ class SSESPNet:
                 output = self.model(input_tensor)
                 if self.up:
                     output = self.up(output)
+                output = torch.argmax(output, 1)[0].cpu().numpy()
+                resultImg = np.zeros((output.shape[0], output.shape[1], 3), dtype=np.uint8)
+                for idx in range(len(self.pallete)):
+                    resultImg[output == idx] = self.pallete[idx]
+                resultImg1 = Image.fromarray(resultImg)
+                resultImg2 = Image.blend(img, resultImg1, 0.5)
+                imgByteArr = BytesIO()
+                resultImg1.save(imgByteArr, format='PNG')
+                imgBytes = imgByteArr.getvalue()
+                s1 = base64.b64encode(imgBytes)
+                s1 = s1.decode('ascii')
+                resultImg2.save(imgByteArr, format='PNG')
+                imgBytes = imgByteArr.getvalue()
+                s2 = base64.b64encode(imgBytes)
+                s2 = s2.decode('ascii')
+                s1 = 'data:image/png;base64,' + s1
+                s2 = 'data:image/png;base64,' + s2
 
-            result = {'label': self.classes[index], 'probability': str(pred_probs[index])}
-            print(self.classes[index])
-            my_list.append(result)
-        # print(my_list)
-        output = [[x['label'], x['probability']] for x in my_list]
-        df = pd.DataFrame(output, columns=['label', 'probability'])
+            my_list.append([s1, s2])
+        df = pd.DataFrame(my_list, columns=['mask', 'fusion'])
         return df
 
     def evaluate(self, data_path='test_data', save_path='outputs'):

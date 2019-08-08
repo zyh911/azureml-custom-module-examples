@@ -9,7 +9,7 @@ from azureml.studio.common.datatypes import DataTypes
 from azureml.studio.common.datatable.data_table import DataTable
 
 
-def entrance(data_path='test_data', save_path='outputs'):
+def entrance(data_path='script/test_data', save_path='script/outputs'):
     my_list = []
     image_list = os.listdir(data_path)
     post_list = ['jfif', 'png', 'jpg', 'jpeg']
