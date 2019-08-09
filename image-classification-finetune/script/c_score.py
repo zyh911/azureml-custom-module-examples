@@ -94,11 +94,6 @@ class ICDenseNet:
                 temp2[output2 == target] = 1
                 true_cnt1 += torch.sum(temp1).item()
                 true_cnt2 += torch.sum(temp2).item()
-                for i in range(temp_cnt):
-                    if output1[i] == target[i]:
-                        true_cnt1 += 1
-                    if output2[i] == target[i]:
-                        true_cnt2 += 1
 
         print(true_cnt1 / total_cnt, true_cnt2 / total_cnt)
 
