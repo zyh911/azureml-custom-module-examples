@@ -1,134 +1,134 @@
 import torch
 import torch.nn as nn
 
-__author__ = "Sachin Mehta"
 
 class CBR(nn.Module):
-    '''
+    """
     This class defines the convolution layer with batch normalization and PReLU activation
-    '''
+    """
     def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
-
+        """
         :param nIn: number of input channels
         :param nOut: number of output channels
         :param kSize: kernel size
         :param stride: stride rate for down-sampling. Default is 1
-        '''
+        """
         super().__init__()
         padding = int((kSize - 1)/2)
-        #self.conv = nn.Conv2d(nIn, nOut, kSize, stride=stride, padding=padding, bias=False)
+        # self.conv = nn.Conv2d(nIn, nOut, kSize, stride=stride, padding=padding, bias=False)
         self.conv = nn.Conv2d(nIn, nOut, (kSize, kSize), stride=stride, padding=(padding, padding), bias=False)
-        #self.conv1 = nn.Conv2d(nOut, nOut, (1, kSize), stride=1, padding=(0, padding), bias=False)
+        # self.conv1 = nn.Conv2d(nOut, nOut, (1, kSize), stride=1, padding=(0, padding), bias=False)
         self.bn = nn.BatchNorm2d(nOut, eps=1e-03)
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
+        """
         :param input: input feature map
         :return: transformed feature map
-        '''
+        """
         output = self.conv(input)
-        #output = self.conv1(output)
+        # output = self.conv1(output)
         output = self.bn(output)
         output = self.act(output)
         return output
 
 
 class BR(nn.Module):
-    '''
-        This class groups the batch normalization and PReLU activation
-    '''
+    """
+    This class groups the batch normalization and PReLU activation
+    """
     def __init__(self, nOut):
-        '''
+        """
         :param nOut: output feature maps
-        '''
+        """
         super().__init__()
         self.bn = nn.BatchNorm2d(nOut, eps=1e-03)
         self.act = nn.PReLU(nOut)
 
     def forward(self, input):
-        '''
+        """
         :param input: input feature map
         :return: normalized and thresholded feature map
-        '''
+        """
         output = self.bn(input)
         output = self.act(output)
         return output
 
+
 class CB(nn.Module):
-    '''
-       This class groups the convolution and batch normalization
-    '''
+    """
+    This class groups the convolution and batch normalization
+    """
     def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
+        """
         :param nIn: number of input channels
         :param nOut: number of output channels
         :param kSize: kernel size
         :param stride: optinal stide for down-sampling
-        '''
+        """
         super().__init__()
         padding = int((kSize - 1)/2)
         self.conv = nn.Conv2d(nIn, nOut, (kSize, kSize), stride=stride, padding=(padding, padding), bias=False)
         self.bn = nn.BatchNorm2d(nOut, eps=1e-03)
 
     def forward(self, input):
-        '''
-
+        """
         :param input: input feature map
         :return: transformed feature map
-        '''
+        """
         output = self.conv(input)
         output = self.bn(output)
         return output
 
-class C(nn.Module):
-    '''
-    This class is for a convolutional layer.
-    '''
-    def __init__(self, nIn, nOut, kSize, stride=1):
-        '''
 
+class C(nn.Module):
+    """
+    This class is for a convolutional layer.
+    """
+    def __init__(self, nIn, nOut, kSize, stride=1):
+        """
         :param nIn: number of input channels
         :param nOut: number of output channels
         :param kSize: kernel size
         :param stride: optional stride rate for down-sampling
-        '''
+        """
         super().__init__()
         padding = int((kSize - 1)/2)
         self.conv = nn.Conv2d(nIn, nOut, (kSize, kSize), stride=stride, padding=(padding, padding), bias=False)
 
     def forward(self, input):
-        '''
+        """
         :param input: input feature map
         :return: transformed feature map
-        '''
+        """
         output = self.conv(input)
         return output
 
+
 class CDilated(nn.Module):
-    '''
+    """
     This class defines the dilated convolution.
-    '''
+    """
     def __init__(self, nIn, nOut, kSize, stride=1, d=1):
-        '''
+        """
         :param nIn: number of input channels
         :param nOut: number of output channels
         :param kSize: kernel size
         :param stride: optional stride rate for down-sampling
         :param d: optional dilation rate
-        '''
+        """
         super().__init__()
-        padding = int((kSize - 1)/2) * d
+        padding = int((kSize - 1) / 2) * d
         self.conv = nn.Conv2d(nIn, nOut, (kSize, kSize), stride=stride, padding=(padding, padding), bias=False, dilation=d)
 
     def forward(self, input):
-        '''
+        """
         :param input: input feature map
         :return: transformed feature map
-        '''
+        """
         output = self.conv(input)
         return output
+
 
 class DownSamplerB(nn.Module):
     def __init__(self, nIn, nOut):
@@ -157,25 +157,26 @@ class DownSamplerB(nn.Module):
         add3 = add2 + d8
         add4 = add3 + d16
 
-        combine = torch.cat([d1, add1, add2, add3, add4],1)
-        #combine_in_out = input + combine
+        combine = torch.cat([d1, add1, add2, add3, add4], 1)
+        # combine_in_out = input + combine
         output = self.bn(combine)
         output = self.act(output)
         return output
 
+
 class DilatedParllelResidualBlockB(nn.Module):
-    '''
+    """
     This class defines the ESP block, which is based on the following principle
         Reduce ---> Split ---> Transform --> Merge
-    '''
+    """
     def __init__(self, nIn, nOut, add=True):
-        '''
+        """
         :param nIn: number of input channels
         :param nOut: number of output channels
         :param add: if true, add a residual connection through identity operation. You can use projection too as
                 in ResNet paper, but we avoid to use it if the dimensions are not the same because we do not want to
                 increase the module complexity
-        '''
+        """
         super().__init__()
         n = int(nOut/5)
         n1 = nOut - 4*n
@@ -189,10 +190,10 @@ class DilatedParllelResidualBlockB(nn.Module):
         self.add = add
 
     def forward(self, input):
-        '''
+        """
         :param input: input feature map
         :return: transformed feature map
-        '''
+        """
         # reduce
         output1 = self.c1(input)
         # split and transform
@@ -208,7 +209,7 @@ class DilatedParllelResidualBlockB(nn.Module):
         add3 = add2 + d8
         add4 = add3 + d16
 
-        #merge
+        # merge
         combine = torch.cat([d1, add1, add2, add3, add4], 1)
 
         # if residual version
@@ -217,16 +218,17 @@ class DilatedParllelResidualBlockB(nn.Module):
         output = self.bn(combine)
         return output
 
+
 class InputProjectionA(nn.Module):
-    '''
+    """
     This class projects the input image to the same spatial dimensions as the feature map.
     For example, if the input image is 512 x512 x3 and spatial dimensions of feature map size are 56x56xF, then
     this class will generate an output of 56x56x3
-    '''
+    """
     def __init__(self, samplingTimes):
-        '''
+        """
         :param samplingTimes: The rate at which you want to down-sample the image
-        '''
+        """
         super().__init__()
         self.pool = nn.ModuleList()
         for i in range(0, samplingTimes):
@@ -234,25 +236,25 @@ class InputProjectionA(nn.Module):
             self.pool.append(nn.AvgPool2d(3, stride=2, padding=1))
 
     def forward(self, input):
-        '''
+        """
         :param input: Input RGB Image
         :return: down-sampled image (pyramid-based approach)
-        '''
+        """
         for pool in self.pool:
             input = pool(input)
         return input
 
 
 class ESPNet_Encoder(nn.Module):
-    '''
+    """
     This class defines the ESPNet-C network in the paper
-    '''
+    """
     def __init__(self, classes=20, p=5, q=3):
-        '''
+        """
         :param classes: number of classes in the dataset. Default is 20 for the cityscapes
         :param p: depth multiplier
         :param q: depth multiplier
-        '''
+        """
         super().__init__()
         self.level1 = CBR(3, 16, 3, 2)
         self.sample1 = InputProjectionA(1)
@@ -284,19 +286,19 @@ class ESPNet_Encoder(nn.Module):
         inp2 = self.sample2(input)
 
         output0_cat = self.b1(torch.cat([output0, inp1], 1))
-        output1_0 = self.level2_0(output0_cat) # down-sampled
+        output1_0 = self.level2_0(output0_cat)  # down-sampled
         
         for i, layer in enumerate(self.level2):
-            if i==0:
+            if i == 0:
                 output1 = layer(output1_0)
             else:
                 output1 = layer(output1)
 
         output1_cat = self.b2(torch.cat([output1,  output1_0, inp2], 1))
 
-        output2_0 = self.level3_0(output1_cat) # down-sampled
+        output2_0 = self.level3_0(output1_cat)  # down-sampled
         for i, layer in enumerate(self.level3):
-            if i==0:
+            if i == 0:
                 output2 = layer(output2_0)
             else:
                 output2 = layer(output2)
@@ -314,13 +316,13 @@ class ESPNet(nn.Module):
     """
 
     def __init__(self, classes=20, p=2, q=3, encoderFile=None):
-        '''
+        """
         :param classes: number of classes in the dataset. Default is 20 for the cityscapes
         :param p: depth multiplier
         :param q: depth multiplier
         :param encoderFile: pretrained encoder weights. Recall that we first trained the ESPNet-C and then attached the
                             RUM-based light weight decoder. See paper for more details.
-        '''
+        """
         super().__init__()
         self.encoder = ESPNet_Encoder(classes, p, q)
         if encoderFile is not None:
@@ -344,10 +346,10 @@ class ESPNet(nn.Module):
         self.classifier = nn.ConvTranspose2d(classes, classes, 2, stride=2, padding=0, output_padding=0, bias=False)
 
     def forward(self, input):
-        '''
+        """
         :param input: RGB image
         :return: transformed feature map
-        '''
+        """
         output0 = self.modules_list[0](input)
         inp1 = self.modules_list[1](input)
         inp2 = self.modules_list[2](input)
@@ -374,7 +376,7 @@ class ESPNet(nn.Module):
 
         output2_c = self.up_l3(self.br(self.modules_list[10](output2_cat)))  # RUM
 
-        output1_C = self.level3_C(output1_cat) # project to C-dimensional space
+        output1_C = self.level3_C(output1_cat)  # project to C-dimensional space
         comb_l2_l3 = self.up_l2(self.combine_l2_l3(torch.cat([output1_C, output2_c], 1)))  # RUM
 
         concat_features = self.conv(torch.cat([comb_l2_l3, output0_cat], 1))
