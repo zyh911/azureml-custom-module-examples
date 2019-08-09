@@ -12,7 +12,7 @@ inputs:
   port: True
   description: model_path
 - name: Data path
-  type: TabularDataFolder
+  type: GenericFolder
   port: True
   description: data_path
 - name: Model Type
