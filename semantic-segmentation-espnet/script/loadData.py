@@ -2,20 +2,18 @@ import numpy as np
 import cv2
 import pickle
 
-__author__ = "Sachin Mehta"
-
 
 class LoadData:
-    '''
+    """
     Class to laod the data
-    '''
+    """
     def __init__(self, data_dir, classes, cached_data_file, normVal=1.10):
-        '''
+        """
         :param data_dir: directory where the dataset is kept
         :param classes: number of classes in the dataset
         :param cached_data_file: location where cached file has to be stored
         :param normVal: normalization value, as defined in ERFNet paper
-        '''
+        """
         self.data_dir = data_dir
         self.classes = classes
         self.classWeights = np.ones(self.classes, dtype=np.float32)
@@ -29,22 +27,22 @@ class LoadData:
         self.cached_data_file = cached_data_file
 
     def compute_class_weights(self, histogram):
-        '''
+        """
         Helper function to compute the class weights
         :param histogram: distribution of class samples
         :return: None, but updates the classWeights variable
-        '''
+        """
         normHist = histogram / np.sum(histogram)
         for i in range(self.classes):
             self.classWeights[i] = 1 / (np.log(self.normVal + normHist[i]))
 
     def readFile(self, fileName, trainStg=False):
-        '''
+        """
         Function to read the data
         :param fileName: file that stores the image locations
         :param trainStg: if processing training or validation data
         :return: 0 if successful
-        '''
+        """
         if trainStg:
             global_hist = np.zeros(self.classes, dtype=np.float32)
 
@@ -101,11 +99,11 @@ class LoadData:
         return 0
 
     def processData(self):
-        '''
+        """
         main.py calls this function
         We expect train.txt and val.txt files to be inside the data directory.
         :return:
-        '''
+        """
         print('Processing training data')
         return_val = self.readFile('train.txt', True)
 

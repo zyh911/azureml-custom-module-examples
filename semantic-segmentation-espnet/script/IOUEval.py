@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 
-#adapted from https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/score.py
+# adapted from https://github.com/shelhamer/fcn.berkeleyvision.org/blob/master/score.py
+
 
 class iouEval:
     def __init__(self, nClasses):
