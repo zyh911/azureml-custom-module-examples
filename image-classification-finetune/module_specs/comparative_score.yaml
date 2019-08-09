@@ -57,7 +57,7 @@ implementation:
     command:
     - python
     - -m
-    - script.score
+    - script.c_score
     args:
     - --compared_model_path
     - inputValue: Compared model path
