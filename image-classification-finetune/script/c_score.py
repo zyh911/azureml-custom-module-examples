@@ -1,5 +1,6 @@
 import os
 import time
+import numpy as np
 import json
 import fire
 from PIL import Image
@@ -87,6 +88,12 @@ class ICDenseNet:
 
                 temp_cnt = output1.shape[0]
                 total_cnt += temp_cnt
+                temp1 = torch.zeros([temp_cnt], dtype=torch.uint8)
+                temp2 = torch.zeros([temp_cnt], dtype=torch.uint8)
+                temp1[output1 == target] = 1
+                temp2[output2 == target] = 1
+                true_cnt1 += torch.sum(temp1).item()
+                true_cnt2 += torch.sum(temp2).item()
                 for i in range(temp_cnt):
                     if output1[i] == target[i]:
                         true_cnt1 += 1
