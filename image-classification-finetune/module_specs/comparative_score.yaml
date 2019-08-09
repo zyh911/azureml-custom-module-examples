@@ -72,6 +72,6 @@ implementation:
     - --save_path
     - outputPath: Save path
   invoking:
-    module: script.c_score
+    module: script.score
     class: ICDenseNet
     func: run
