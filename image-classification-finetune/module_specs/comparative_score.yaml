@@ -1,0 +1,77 @@
+name: Finetune Comparative Score
+id: eaae896b-9e84-4021-8d0d-ae3c4b09f74c
+category: Machine Learning\Score
+description: Loads a DenseNet for image classification finetune and score it compared with a ImageNet-pretrained model.
+inputs:
+- name: Compared model path
+  type: ModelFolder
+  port: True
+  description: compared_model_path
+- name: Model path
+  type: ModelFolder
+  port: True
+  description: model_path
+- name: Data path
+  type: TabularDataFolder
+  port: True
+  description: data_path
+- name: Model Type
+  type: Mode
+  default: 'densenet201'
+  description: model_type
+  options:
+    - 'densenet201'
+    - 'densenet169'
+    - 'densenet161'
+    - 'densenet121'
+- name: Memory efficient
+  type: Boolean
+  default: False
+  description: memory_efficient
+outputs:
+- name: Save path
+  type: TabularDataFolder
+  description: save_path
+implementation:
+  container:
+    runConfig:
+      baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
+      gpuSupport: True
+    conda:
+      name: project_environment
+      channels:
+      - defaults
+      dependencies:
+      - python=3.6.3
+      - pip:
+        - --extra-index-url=https://test.pypi.org/simple
+        - fire==0.1.3
+        - azureml-core==1.0.48
+        - alghost==0.0.70
+        - pandas==0.24.2
+        - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+        - https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+        - pillow==6.0.0
+        - pyarrow==0.14.0
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=image-classification-finetune
+    command:
+    - python
+    - -m
+    - script.score
+    args:
+    - --compared_model_path
+    - inputValue: Compared model path
+    - --model_path
+    - inputValue: Model path
+    - --data_path
+    - inputValue: Data path
+    - --model_type
+    - inputValue: Model Type
+    - --memory_efficient
+    - inputValue: Memory efficient
+    - --save_path
+    - outputPath: Save path
+  invoking:
+    module: script.c_score
+    class: ICDenseNet
+    func: run
