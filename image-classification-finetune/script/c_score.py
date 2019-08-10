@@ -71,30 +71,30 @@ class ICDenseNet:
 
         with torch.no_grad():
             for batch_idx, (input, target) in enumerate(test_loader):
-                # Create vaiables
-                target_backup = target.copy()
+                if torch.cuda.is_available():
+                    input = input.cuda()
+                    target = target.cuda()
+
+                temp_cnt = target.shape[0]
+                total_cnt += temp_cnt
+
+                output1 = self.model(input)
+                output1 = torch.argmax(output1, 1)
+                temp1 = torch.zeros([temp_cnt], dtype=torch.uint8)
+                temp1[output1 == target] = 1
+                true_cnt1 += torch.sum(temp1).item()
+
                 for i in range(len(target)):
                     name = label_list[target[i]]
                     names = name.split('-', 1)
                     names2 = names[-1].split('_')
                     final_str = ' '.join(names2)
                     target[i] = torch.tensor(new_dict[final_str])
-                if torch.cuda.is_available():
-                    input = input.cuda()
-                    target = target.cuda()
 
-                output1 = self.model(input)
-                output1 = torch.argmax(output1, 1)
                 output2 = self.cmodel(input)
                 output2 = torch.argmax(output2, 1)
-
-                temp_cnt = output1.shape[0]
-                total_cnt += temp_cnt
-                temp1 = torch.zeros([temp_cnt], dtype=torch.uint8)
                 temp2 = torch.zeros([temp_cnt], dtype=torch.uint8)
-                temp1[output1 == target_backup] = 1
                 temp2[output2 == target] = 1
-                true_cnt1 += torch.sum(temp1).item()
                 true_cnt2 += torch.sum(temp2).item()
 
         print(true_cnt1 / total_cnt, true_cnt2 / total_cnt)
