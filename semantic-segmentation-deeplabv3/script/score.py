@@ -13,7 +13,9 @@ from azureml.studio.common.datatable.data_table import DataTable
 
 import torch
 import torch.nn as nn
-from torchvision import datasets, transforms
+from torchvision import transforms
+
+from .model import deeplabv3_resnet101
 
 
 class SSDeeplabv3:
@@ -28,13 +30,11 @@ class SSDeeplabv3:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
-        self.model = torch.hub.load('pytorch/vision', 'deeplabv3_resnet101', pretrained=False)
 
+        self.model = deeplabv3_resnet101(pretrained=True)
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
-            if torch.cuda.device_count() > 1:
-                self.model = torch.nn.DataParallel(self.model).cuda()
 
         self.model.eval()
 

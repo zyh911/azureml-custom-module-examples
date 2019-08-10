@@ -3,12 +3,14 @@ import json
 import fire
 import torch
 
+from .model import deeplabv3_resnet101
+
 
 def entrance_fake(data_path='script/dataset', save_path='script/saved_model'):
 
     os.makedirs(save_path, exist_ok=True)
 
-    model = torch.hub.load('pytorch/vision', 'deeplabv3_resnet101', pretrained=True)
+    model = deeplabv3_resnet101(pretrained=True)
     torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
 
     # Dump data_type.json as a work around until SMT deploys
