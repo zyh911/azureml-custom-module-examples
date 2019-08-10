@@ -7,41 +7,6 @@ inputs:
   type: GenericFolder
   port: True
   description: data_path
-- name: Model path
-  type: ModelFolder
-  port: True
-  description: model_path
-- name: Model Type
-  type: Mode
-  default: 'ESPNet'
-  description: model_type
-  options:
-    - 'ESPNet'
-    - 'ESPNet-C'
-- name: Pretrained
-  type: Boolean
-  default: True
-  description: pretrained
-- name: Max epochs
-  type: Int
-  default: 10
-  description: max_epochs
-- name: Batch size
-  type: Int
-  default: 6
-  description: batch_size
-- name: Use gpu
-  type: Boolean
-  default: True
-  description: use_gpu
-- name: P
-  type: Int
-  default: 2
-  description: p
-- name: Q
-  type: Int
-  default: 8
-  description: q
 outputs:
 - name: Save path
   type: ModelFolder
@@ -69,21 +34,5 @@ implementation:
     args:
     - --data_path
     - inputValue: Data path
-    - --model_path
-    - inputValue: Model path
-    - --model_type
-    - inputValue: Model Type
-    - --pretrained
-    - inputValue: Pretrained
-    - --max_epochs
-    - inputValue: Max epochs
-    - --batch_size
-    - inputValue: Batch size
-    - --use_gpu
-    - inputValue: Use gpu
-    - -p
-    - inputValue: P
-    - -q
-    - inputValue: Q
     - --save_path
     - outputPath: Save path

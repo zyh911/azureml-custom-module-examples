@@ -11,21 +11,6 @@ inputs:
   type: TabularDataFolder
   port: True
   description: data_path
-- name: Model Type
-  type: Mode
-  default: 'ESPNet'
-  description: model_type
-  options:
-    - 'ESPNet'
-    - 'ESPNet-C'
-- name: P
-  type: Int
-  default: 2
-  description: p
-- name: Q
-  type: Int
-  default: 8
-  description: q
 outputs:
 - name: Save path
   type: TabularDataFolder
@@ -61,15 +46,9 @@ implementation:
     - inputValue: Model path
     - --data_path
     - inputValue: Data path
-    - --model_type
-    - inputValue: Model Type
-    - -p
-    - inputValue: P
-    - -q
-    - inputValue: Q
     - --save_path
     - outputPath: Save path
   invoking:
     module: script.score
-    class: SSESPNet
+    class: SSDeeplabv3
     func: run
