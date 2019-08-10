@@ -32,6 +32,10 @@ inputs:
   type: Int
   default: 4
   description: batch_size
+- name: Learning rate
+  type: Double
+  default: 0.001
+  description: learning_rate
 - name: Random seed
   type: Int
   default: 1
@@ -74,6 +78,8 @@ implementation:
     - inputValue: Epochs
     - --batch_size
     - inputValue: Batch size
+    - --learning_rate
+    - inputValue: Learning rate
     - --random_seed
     - inputValue: Random seed
     - --save_path

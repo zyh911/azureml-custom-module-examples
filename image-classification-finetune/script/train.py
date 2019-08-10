@@ -204,7 +204,8 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
 
 
 def entrance(data_path='script/dataset/dog_train', save_path='script/saved_model', model_type='densenet201',
-             pretrained=True, memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
+             pretrained=True, memory_efficient=False, epochs=1, batch_size=4, learning_rate=0.001,
+             random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
     stdv = [0.229, 0.224, 0.225]
@@ -250,7 +251,7 @@ def entrance(data_path='script/dataset/dog_train', save_path='script/saved_model
     train(model=model, train_set=train_set,
           valid_set=valid_set, test_set=test_set, save_path=save_path, epochs=epochs,
           batch_size=batch_size, random_seed=random_seed,
-          model_type=model_type, memory_efficient=memory_efficient)
+          model_type=model_type, memory_efficient=memory_efficient, lr=learning_rate)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
