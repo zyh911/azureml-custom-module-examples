@@ -24,6 +24,30 @@ class SSDeeplabv3:
         colors = torch.as_tensor([i for i in range(21)])[:, None] * palette
         self.colors = (colors % 255).numpy().astype("uint8")
 
+        self.pallete = [
+            [255, 255, 255],
+            [128, 64, 128],
+            [244, 35, 232],
+            [70, 70, 70],
+            [102, 102, 156],
+            [190, 153, 153],
+            [153, 153, 153],
+            [250, 170, 30],
+            [220, 220, 0],
+            [107, 142, 35],
+            [152, 251, 152],
+            [70, 130, 180],
+            [220, 20, 60],
+            [255, 0, 0],
+            [0, 0, 142],
+            [0, 0, 70],
+            [0, 60, 100],
+            [0, 80, 100],
+            [0, 0, 230],
+            [119, 11, 32],
+            [0, 0, 0]
+        ]
+
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
@@ -54,10 +78,12 @@ class SSDeeplabv3:
 
             with torch.no_grad():
                 output = self.model(input_tensor)['out'][0]
-                output_predictions = output.argmax(0)
+                output_predictions = output.argmax(0).cpu().numpy()
+                resultImg = np.zeros((output_predictions.shape[0], output_predictions.shape[1], 3), dtype=np.uint8)
+                for idx in range(len(self.pallete)):
+                    resultImg[output_predictions == idx] = self.pallete[idx]
 
-                resultImg1 = Image.fromarray(output_predictions.byte().cpu().numpy()).resize(img.size)
-                resultImg1.putpalette(self.colors)
+                resultImg1 = Image.fromarray(resultImg).resize(img.size)
                 resultImg2 = Image.blend(img, resultImg1, 0.5)
                 imgByteArr1 = BytesIO()
                 imgByteArr2 = BytesIO()
