@@ -16,8 +16,8 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from .densenet import densenet201, densenet169, densenet161, densenet121
-from .imagenet1000_index_to_label import my_dict
+from .densenet import densenet201, densenet169, densenet161, densenet121, MyDenseNet
+from .dog120_index_to_label import my_dict
 from .imagenet1000_label_to_index import new_dict
 
 
@@ -35,19 +35,20 @@ class ICDenseNet:
             self.memory_efficient = True
         else:
             self.memory_efficient = False
+
+        self.model = MyDenseNet(model_type=meta['Model Type'], pretrained=False,
+                                memory_efficient=self.memory_efficient, classes=120)
+        self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
+
         if meta['Model Type'] == 'densenet201':
-            self.model = densenet201(pretrained=False, memory_efficient=self.memory_efficient)
             self.cmodel = densenet201(pretrained=True, memory_efficient=self.memory_efficient)
         elif meta['Model Type'] == 'densenet169':
-            self.model = densenet169(pretrained=False, memory_efficient=self.memory_efficient)
             self.cmodel = densenet169(pretrained=True, memory_efficient=self.memory_efficient)
         elif meta['Model Type'] == 'densenet161':
-            self.model = densenet161(pretrained=False, memory_efficient=self.memory_efficient)
             self.cmodel = densenet161(pretrained=True, memory_efficient=self.memory_efficient)
         else:
-            self.model = densenet121(pretrained=False, memory_efficient=self.memory_efficient)
             self.cmodel = densenet121(pretrained=True, memory_efficient=self.memory_efficient)
-        self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
+
         if torch.cuda.is_available():
             self.model = self.model.cuda()
             self.cmodel = self.cmodel.cuda()
@@ -71,6 +72,7 @@ class ICDenseNet:
         with torch.no_grad():
             for batch_idx, (input, target) in enumerate(test_loader):
                 # Create vaiables
+                target_backup = target.copy()
                 for i in range(len(target)):
                     name = label_list[target[i]]
                     names = name.split('-', 1)
@@ -90,7 +92,7 @@ class ICDenseNet:
                 total_cnt += temp_cnt
                 temp1 = torch.zeros([temp_cnt], dtype=torch.uint8)
                 temp2 = torch.zeros([temp_cnt], dtype=torch.uint8)
-                temp1[output1 == target] = 1
+                temp1[output1 == target_backup] = 1
                 temp2[output2 == target] = 1
                 true_cnt1 += torch.sum(temp1).item()
                 true_cnt2 += torch.sum(temp2).item()

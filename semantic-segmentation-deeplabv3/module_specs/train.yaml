@@ -1,0 +1,89 @@
+name: Deeplabv3 Training
+id: b9406d46-a5e9-4702-9faf-fe383607cc40
+category: Machine Learning\Train
+description: Creates a Deeplabv3 for semantic segmentation and trains it
+inputs:
+- name: Data path
+  type: GenericFolder
+  port: True
+  description: data_path
+- name: Model path
+  type: ModelFolder
+  port: True
+  description: model_path
+- name: Model Type
+  type: Mode
+  default: 'ESPNet'
+  description: model_type
+  options:
+    - 'ESPNet'
+    - 'ESPNet-C'
+- name: Pretrained
+  type: Boolean
+  default: True
+  description: pretrained
+- name: Max epochs
+  type: Int
+  default: 10
+  description: max_epochs
+- name: Batch size
+  type: Int
+  default: 6
+  description: batch_size
+- name: Use gpu
+  type: Boolean
+  default: True
+  description: use_gpu
+- name: P
+  type: Int
+  default: 2
+  description: p
+- name: Q
+  type: Int
+  default: 8
+  description: q
+outputs:
+- name: Save path
+  type: ModelFolder
+  description: save_path
+implementation:
+  container:
+    runConfig:
+      baseDockerImage: mcr.microsoft.com/azureml/base-gpu:intelmpi2018.3-cuda10.0-cudnn7-ubuntu16.04
+      gpuSupport: True
+    conda:
+      name: project_environment
+      channels:
+      - defaults
+      dependencies:
+      - python=3.6.3
+      - py-opencv=3.4.2
+      - pip:
+        - https://download.pytorch.org/whl/cu100/torch-1.1.0-cp36-cp36m-linux_x86_64.whl
+        - https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp36-cp36m-linux_x86_64.whl
+        - git+https://github.com/zyh911/azureml-custom-module-examples.git@master#subdirectory=semantic-segmentation-deeplabv3
+    command:
+    - python
+    - -m
+    - script.train
+    args:
+    - --data_path
+    - inputValue: Data path
+    - --model_path
+    - inputValue: Model path
+    - --model_type
+    - inputValue: Model Type
+    - --pretrained
+    - inputValue: Pretrained
+    - --max_epochs
+    - inputValue: Max epochs
+    - --batch_size
+    - inputValue: Batch size
+    - --use_gpu
+    - inputValue: Use gpu
+    - -p
+    - inputValue: P
+    - -q
+    - inputValue: Q
+    - --save_path
+    - outputPath: Save path

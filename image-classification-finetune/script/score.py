@@ -15,8 +15,9 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, transforms
 
-from .densenet import densenet201, densenet169, densenet161, densenet121
-from .imagenet1000_index_to_label import my_dict
+from .densenet import MyDenseNet
+# from .imagenet1000_index_to_label import my_dict
+from .dog120_index_to_label import my_dict
 
 
 class AverageMeter(object):
@@ -54,14 +55,9 @@ class ICDenseNet:
             self.memory_efficient = True
         else:
             self.memory_efficient = False
-        if meta['Model Type'] == 'densenet201':
-            self.model = densenet201(pretrained=False, memory_efficient=self.memory_efficient)
-        elif meta['Model Type'] == 'densenet169':
-            self.model = densenet169(pretrained=False, memory_efficient=self.memory_efficient)
-        elif meta['Model Type'] == 'densenet161':
-            self.model = densenet161(pretrained=False, memory_efficient=self.memory_efficient)
-        else:
-            self.model = densenet121(pretrained=False, memory_efficient=self.memory_efficient)
+
+        self.model = MyDenseNet(model_type=meta['Model Type'], pretrained=False,
+                                memory_efficient=self.memory_efficient, classes=120)
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -186,20 +182,18 @@ class ICDenseNet:
         return df
 
     def evaluate_new(self, data_path='test_data', save_path='outputs'):
-        self.data_path = data_path
-        self.save_path = save_path
-        os.makedirs(self.save_path, exist_ok=True)
-        input = pd.read_parquet(os.path.join(self.data_path, 'data.dataset.parquet'), engine='pyarrow')
+        os.makedirs(save_path, exist_ok=True)
+        input = pd.read_parquet(os.path.join(data_path, 'data.dataset.parquet'), engine='pyarrow')
         df = self.run(input)
         # df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
         # print(input)
         dt = DataTable(df)
-        OutputHandler.handle_output(data=dt, file_path=self.save_path,
+        OutputHandler.handle_output(data=dt, file_path=save_path,
                                     file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
 
 
-def test(model_path='saved_model', data_path='outputs', save_path='outputs2', model_type='densenet201',
+def test(model_path='script/saved_model', data_path='script/outputs', save_path='script/outputs2', model_type='densenet201',
          memory_efficient=False):
     meta = {'Model Type': model_type, 'Memory efficient': str(memory_efficient)}
     icdensenet = ICDenseNet(model_path, meta)

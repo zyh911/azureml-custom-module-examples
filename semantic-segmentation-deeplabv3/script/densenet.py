@@ -9,7 +9,7 @@ try:
 except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
-__all__ = ['MyDenseNet', 'densenet201', 'densenet169', 'densenet161', 'densenet121']
+__all__ = ['DenseNet', 'densenet121', 'densenet169', 'densenet201', 'densenet161']
 
 model_urls = {
     'densenet121': 'https://download.pytorch.org/models/densenet121-a639ec97.pth',
@@ -237,22 +237,3 @@ def densenet201(pretrained=False, progress=True, **kwargs):
     """
     return _densenet('densenet201', 32, (6, 12, 48, 32), 64, pretrained, progress,
                      **kwargs)
-
-
-class MyDenseNet(nn.Module):
-    def __init__(self, model_type='densenet201', pretrained=True, memory_efficient=False, classes=20):
-        super().__init__()
-        if model_type == 'densenet201':
-            self.model1 = densenet201(pretrained=pretrained, memory_efficient=memory_efficient)
-        elif model_type == 'densenet169':
-            self.model1 = densenet169(pretrained=pretrained, memory_efficient=memory_efficient)
-        elif model_type == 'densenet161':
-            self.model1 = densenet161(pretrained=pretrained, memory_efficient=memory_efficient)
-        else:
-            self.model1 = densenet121(pretrained=pretrained, memory_efficient=memory_efficient)
-        self.model2 = nn.Linear(1000, classes)
-
-    def forward(self, input):
-        output = self.model1(input)
-        output = self.model2(output)
-        return output
