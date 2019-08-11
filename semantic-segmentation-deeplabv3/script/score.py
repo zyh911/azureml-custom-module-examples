@@ -20,10 +20,6 @@ from .model import deeplabv3_resnet101
 
 class SSDeeplabv3:
     def __init__(self, model_path='saved_model', meta={}):
-        palette = torch.tensor([2 ** 25 - 1, 2 ** 15 - 1, 2 ** 21 - 1])
-        colors = torch.as_tensor([i for i in range(21)])[:, None] * palette
-        self.colors = (colors % 255).numpy().astype("uint8")
-
         self.pallete = [
             [255, 255, 255],
             [128, 64, 128],
