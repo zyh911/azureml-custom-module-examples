@@ -1,7 +1,7 @@
-name: Image Finetune Training
+name: DenseNet Finetune Train
 id: 034d29ec-d74e-4f3a-96eb-33365e53e77b
 category: Machine Learning\Train
-description: Creates a DenseNet for image classification and trains it
+description: Creates a pretrained DenseNet for image classification and finetunes it
 inputs:
 - name: Data path
   type: GenericFolder

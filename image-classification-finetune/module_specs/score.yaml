@@ -2,6 +2,7 @@ name: Image Finetune Score
 id: cc20ec1d-ec54-4a50-a52f-7d4fae84cd2e
 category: Machine Learning\Score
 description: Loads a DenseNet for image classification and inferences it
+isDeprecated: True
 inputs:
 - name: Model path
   type: ModelFolder
