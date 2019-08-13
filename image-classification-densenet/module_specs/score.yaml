@@ -50,5 +50,5 @@ implementation:
     - outputPath: Save path
   invoking:
     module: script.score
-    class: ICDenseNet
+    class: Score
     func: run
