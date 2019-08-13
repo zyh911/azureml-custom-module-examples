@@ -1,7 +1,7 @@
 name: Index to Label
 id: dc6b6cc2-c9f1-460c-86e5-30e44eaf39e8
 category: Machine Learning\Postprocess
-description: Change indice to labels in image classification tasks
+description: Change indices to labels in image classification tasks
 inputs:
 - name: File path
   type: GenericFolder

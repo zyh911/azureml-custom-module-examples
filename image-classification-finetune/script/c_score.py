@@ -1,13 +1,7 @@
 import os
-import time
-import numpy as np
 import json
 import fire
-from PIL import Image
-from io import BytesIO
-import base64
 import pandas as pd
-import pyarrow.parquet as pq
 from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
 from azureml.studio.common.datatypes import DataTypes
 from azureml.studio.common.datatable.data_table import DataTable
@@ -17,12 +11,12 @@ import torch.nn as nn
 from torchvision import datasets, transforms
 
 from .densenet import densenet201, densenet169, densenet161, densenet121, MyDenseNet
-from .dog120_index_to_label import my_dict
+from .index_to_label import my_dict
 from .imagenet1000_label_to_index import new_dict
 
 
-class ICDenseNet:
-    def __init__(self, compared_model_path='saved_model', model_path='saved_model', meta={}):
+class CScore:
+    def __init__(self, compared_model_path, model_path, meta={}):
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
@@ -36,18 +30,22 @@ class ICDenseNet:
         else:
             self.memory_efficient = False
 
-        self.model = MyDenseNet(model_type=meta['Model Type'], pretrained=False,
+        self.model = MyDenseNet(model_type=meta['Model type'], pretrained=False,
                                 memory_efficient=self.memory_efficient, classes=120)
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
 
-        if meta['Model Type'] == 'densenet201':
-            self.cmodel = densenet201(pretrained=True, memory_efficient=self.memory_efficient)
-        elif meta['Model Type'] == 'densenet169':
-            self.cmodel = densenet169(pretrained=True, memory_efficient=self.memory_efficient)
-        elif meta['Model Type'] == 'densenet161':
-            self.cmodel = densenet161(pretrained=True, memory_efficient=self.memory_efficient)
+        if meta['Model type'] == 'densenet201':
+            self.cmodel = densenet201(model_path=compared_model_path, pretrained=True,
+                                      memory_efficient=self.memory_efficient)
+        elif meta['Model type'] == 'densenet169':
+            self.cmodel = densenet169(model_path=compared_model_path, pretrained=True,
+                                      memory_efficient=self.memory_efficient)
+        elif meta['Model type'] == 'densenet161':
+            self.cmodel = densenet161(model_path=compared_model_path, pretrained=True,
+                                      memory_efficient=self.memory_efficient)
         else:
-            self.cmodel = densenet121(pretrained=True, memory_efficient=self.memory_efficient)
+            self.cmodel = densenet121(model_path=compared_model_path, pretrained=True,
+                                      memory_efficient=self.memory_efficient)
 
         if torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -103,35 +101,7 @@ class ICDenseNet:
                           columns=['Model accuracy', 'Compared model accuracy'])
         return df
 
-    def run(self, input, meta=None):
-        my_list = []
-        for i in range(input.shape[0]):
-            temp_string = input.iloc[i]['image_string']
-            if temp_string.startswith('data:'):
-                my_index = temp_string.find('base64,')
-                temp_string = temp_string[my_index+7:]
-            temp = base64.b64decode(temp_string)
-            img = Image.open(BytesIO(temp))
-            input_tensor = self.inference_transforms(img)
-            input_tensor = input_tensor.unsqueeze(0)
-            if torch.cuda.is_available():
-                input_tensor = input_tensor.cuda()
-
-            with torch.no_grad():
-                output = self.model(input_tensor)
-                softmax = nn.Softmax(dim=1)
-                pred_probs = softmax(output).cpu().numpy()[0]
-                index = torch.argmax(output, 1)[0].cpu().item()
-
-            result = {'label': self.classes[index], 'probability': str(pred_probs[index])}
-            print(self.classes[index])
-            my_list.append(result)
-        # print(my_list)
-        output = [[x['label'], x['probability']] for x in my_list]
-        df = pd.DataFrame(output, columns=['label', 'probability'])
-        return df
-
-    def evaluate_new(self, data_path='test_data', save_path='outputs'):
+    def evaluate(self, data_path='test_data', save_path='outputs'):
         os.makedirs(save_path, exist_ok=True)
         df = self._evaluate_with_label(data_path)
         dt = DataTable(df)
@@ -141,9 +111,9 @@ class ICDenseNet:
 
 def test(compared_model_path='script/saved_model', model_path='script/saved_model', data_path='script/dataset/dog_test',
          save_path='script/outputs2', model_type='densenet201', memory_efficient=False):
-    meta = {'Model Type': model_type, 'Memory efficient': str(memory_efficient)}
-    icdensenet = ICDenseNet(compared_model_path, model_path, meta)
-    icdensenet.evaluate_new(data_path=data_path, save_path=save_path)
+    meta = {'Model type': model_type, 'Memory efficient': str(memory_efficient)}
+    cscore = CScore(compared_model_path, model_path, meta)
+    cscore.evaluate(data_path=data_path, save_path=save_path)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {

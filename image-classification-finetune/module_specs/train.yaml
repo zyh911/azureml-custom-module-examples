@@ -3,11 +3,15 @@ id: 034d29ec-d74e-4f3a-96eb-33365e53e77b
 category: Machine Learning\Train
 description: Creates a pretrained DenseNet for image classification and finetunes it
 inputs:
+- name: Model path
+  type: ModelFolder
+  port: True
+  description: model_path
 - name: Data path
   type: GenericFolder
   port: True
   description: data_path
-- name: Model Type
+- name: Model type
   type: Mode
   default: 'densenet201'
   description: model_type
@@ -66,10 +70,12 @@ implementation:
     - -m
     - script.train
     args:
+    - --model_path
+    - inputValue: Model path
     - --data_path
     - inputValue: Data path
     - --model_type
-    - inputValue: Model Type
+    - inputValue: Model type
     - --pretrained
     - inputValue: Pretrained
     - --memory_efficient

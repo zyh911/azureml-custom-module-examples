@@ -1,7 +1,7 @@
 name: Finetune Comparative Score
 id: eaae896b-9e84-4021-8d0d-ae3c4b09f74c
 category: Machine Learning\Score
-description: Loads a DenseNet for image classification finetune and score it compared with a ImageNet-pretrained model.
+description: Loads a DenseNet for image classification finetune and scores it compared with a ImageNet-pretrained model
 inputs:
 - name: Compared model path
   type: ModelFolder
@@ -15,7 +15,7 @@ inputs:
   type: GenericFolder
   port: True
   description: data_path
-- name: Model Type
+- name: Model type
   type: Mode
   default: 'densenet201'
   description: model_type
@@ -66,12 +66,12 @@ implementation:
     - --data_path
     - inputValue: Data path
     - --model_type
-    - inputValue: Model Type
+    - inputValue: Model type
     - --memory_efficient
     - inputValue: Memory efficient
     - --save_path
     - outputPath: Save path
   invoking:
     module: script.score
-    class: ICDenseNet
+    class: Score
     func: run

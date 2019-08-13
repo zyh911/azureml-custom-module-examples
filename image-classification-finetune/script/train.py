@@ -203,9 +203,9 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
     print('Final test error: {:.4f}'.format(test_error))
 
 
-def entrance(data_path='script/dataset/dog_train', save_path='script/saved_model', model_type='densenet201',
-             pretrained=True, memory_efficient=False, epochs=1, batch_size=4, learning_rate=0.001,
-             random_seed=None):
+def entrance(model_path='script/saved_model', data_path='script/dataset/dog_train', save_path='script/saved_model',
+             model_type='densenet201', pretrained=True, memory_efficient=False, epochs=1, batch_size=4,
+             learning_rate=0.001, random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
     stdv = [0.229, 0.224, 0.225]
@@ -244,7 +244,8 @@ def entrance(data_path='script/dataset/dog_train', save_path='script/saved_model
 
     valid_set = None
 
-    model = MyDenseNet(model_type=model_type, pretrained=pretrained, memory_efficient=memory_efficient, classes=120)
+    model = MyDenseNet(model_type=model_type, model_path=model_path,
+                       pretrained=pretrained, memory_efficient=memory_efficient, classes=120)
 
     os.makedirs(save_path, exist_ok=True)
 
