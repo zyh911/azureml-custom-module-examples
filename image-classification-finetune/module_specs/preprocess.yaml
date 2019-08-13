@@ -2,6 +2,7 @@ name: Image Finetune Preprocess
 id: 490e2c5a-bcb3-48f4-89de-49b6c511eb64
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
+isDeprecated: True
 inputs:
 - name: Data path
   type: GenericFolder

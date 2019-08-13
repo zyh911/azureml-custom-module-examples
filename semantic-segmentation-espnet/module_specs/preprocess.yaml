@@ -2,6 +2,7 @@ name: ESPNet Preprocess
 id: e551e0e4-73a9-4402-8a89-f0e8ffc2ae7e
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
+isDeprecated: True
 inputs:
 - name: Data path
   type: GenericFolder

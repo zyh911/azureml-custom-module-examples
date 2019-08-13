@@ -2,6 +2,7 @@ name: ImageNet Preprocess
 id: b0991fb8-154a-4cba-bb95-f91b9d179b94
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
+isDeprecated: True
 inputs:
 - name: Data path
   type: GenericFolder

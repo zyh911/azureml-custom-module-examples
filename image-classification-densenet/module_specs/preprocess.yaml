@@ -1,4 +1,4 @@
-name: Image Preprocess
+name: Image to DataTable
 id: fa4862d9-4d0d-4ada-b9fa-e6913a07e666
 category: Machine Learning\Preprocess
 description: Preprocess test data from GenericFolder to TabularDataFolder
