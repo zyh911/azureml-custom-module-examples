@@ -196,7 +196,8 @@ def train(model, train_set, valid_set, test_set, save_path, epochs, batch_size,
     print('Final test error: {:.4f}'.format(test_error))
 
 
-def entrance(data_path='dataset', save_path='outputs', model_type='densenet201', pretrained=True,
+def entrance(model_path='script/saved_model', data_path='script/dataset', save_path='script/saved_model',
+             model_type='densenet201', pretrained=True,
              memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
     mean = [0.485, 0.456, 0.406]
@@ -260,22 +261,22 @@ def entrance(data_path='dataset', save_path='outputs', model_type='densenet201',
     print('This experiment has been completed.')
 
 
-def entrance_fake(data_path='dataset', save_path='saved_model', model_type='densenet201', pretrained=True,
-             memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
+def entrance_fake(model_path='script/saved_model', data_path='script/dataset', save_path='script/saved_model',
+                  model_type='densenet201', pretrained=True,
+                  memory_efficient=False, epochs=1, batch_size=4, random_seed=None):
 
     os.makedirs(save_path, exist_ok=True)
 
-    model = densenet201(pretrained=pretrained, memory_efficient=memory_efficient)
-    torch.save(model.state_dict(), os.path.join(save_path, 'model201.pth'))
+    if model_type == 'densenet201':
+        model = densenet201(model_path=model_path, pretrained=pretrained, memory_efficient=memory_efficient)
+    elif model_type == 'densenet169':
+        model = densenet169(model_path=model_path, pretrained=pretrained, memory_efficient=memory_efficient)
+    elif model_type == 'densenet161':
+        model = densenet161(model_path=model_path, pretrained=pretrained, memory_efficient=memory_efficient)
+    else:
+        model = densenet121(model_path=model_path, pretrained=pretrained, memory_efficient=memory_efficient)
 
-    model = densenet169(pretrained=pretrained, memory_efficient=memory_efficient)
-    torch.save(model.state_dict(), os.path.join(save_path, 'model169.pth'))
-
-    model = densenet161(pretrained=pretrained, memory_efficient=memory_efficient)
-    torch.save(model.state_dict(), os.path.join(save_path, 'model161.pth'))
-
-    model = densenet121(pretrained=pretrained, memory_efficient=memory_efficient)
-    torch.save(model.state_dict(), os.path.join(save_path, 'model121.pth'))
+    torch.save(model.state_dict(), os.path.join(save_path, 'model.pth'))
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {

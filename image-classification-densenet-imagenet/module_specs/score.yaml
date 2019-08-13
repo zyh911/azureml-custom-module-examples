@@ -1,4 +1,4 @@
-name: ImageNet Score
+name: DenseNet ImageNet Score
 id: ccce8bea-c5dc-4fef-89b2-8956b07eb608
 category: Machine Learning\Score
 description: Loads a DenseNet for image classification and inferences it
@@ -11,7 +11,7 @@ inputs:
   type: TabularDataFolder
   port: True
   description: data_path
-- name: Model Type
+- name: Model type
   type: Mode
   default: 'densenet201'
   description: model_type
@@ -60,12 +60,12 @@ implementation:
     - --data_path
     - inputValue: Data path
     - --model_type
-    - inputValue: Model Type
+    - inputValue: Model type
     - --memory_efficient
     - inputValue: Memory efficient
     - --save_path
     - outputPath: Save path
   invoking:
     module: script.score
-    class: ICDenseNet
+    class: Score
     func: run
