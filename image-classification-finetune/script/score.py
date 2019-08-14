@@ -18,7 +18,7 @@ from .densenet import MyDenseNet
 
 
 class Score:
-    def __init__(self, model_path='saved_model', meta={}):
+    def __init__(self, model_path, meta={}):
         self.mean = [0.485, 0.456, 0.406]
         self.stdv = [0.229, 0.224, 0.225]
         self.inference_transforms = transforms.Compose([
