@@ -280,5 +280,4 @@ def entrance(model_path='script/saved_model', data_path='script/dataset/dog_trai
 
 
 if __name__ == '__main__':
-    # fire.Fire(entrance_fake)
     fire.Fire(entrance)
