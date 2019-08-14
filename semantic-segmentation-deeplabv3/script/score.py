@@ -6,6 +6,7 @@ from io import BytesIO
 from argparse import ArgumentParser
 import base64
 import pandas as pd
+import pyarrow
 from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
 from azureml.studio.common.datatypes import DataTypes
 from azureml.studio.common.datatable.data_table import DataTable
