@@ -6,18 +6,17 @@ from io import BytesIO
 from argparse import ArgumentParser
 import base64
 import pandas as pd
-import pyarrow.parquet as pq
 from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
 from azureml.studio.common.datatypes import DataTypes
 from azureml.studio.common.datatable.data_table import DataTable
 
 import torch
 import torch.nn as nn
-from torchvision import datasets, transforms
+from torchvision import transforms
 from .Model import ESPNet_Encoder, ESPNet
 
 
-class SSESPNet:
+class Score:
     def __init__(self, model_path='saved_model', meta={}):
         self.classes = 20
         self.pallete = [
@@ -51,7 +50,7 @@ class SSESPNet:
         self.up = None
         self.p = int(meta['P'])
         self.q = int(meta['Q'])
-        if meta['Model Type'] == 'ESPNet':
+        if meta['Model type'] == 'ESPNet':
             self.model = ESPNet(classes=self.classes, p=self.p, q=self.q)
         else:
             self.model = ESPNet_Encoder(self.classes, p=self.p, q=self.q)
@@ -111,18 +110,15 @@ class SSESPNet:
         os.makedirs(save_path, exist_ok=True)
         input = pd.read_parquet(os.path.join(data_path, 'data.dataset.parquet'), engine='pyarrow')
         df = self.run(input)
-        # df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
-        # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
-        # print(input)
         dt = DataTable(df)
         OutputHandler.handle_output(data=dt, file_path=save_path,
                                     file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
 
 
 def test(args):
-    meta = {'Model Type': args.model_type, 'P': str(args.p), 'Q': str(args.q)}
-    ssespnet = SSESPNet(args.model_path, meta)
-    ssespnet.evaluate(data_path=args.data_path, save_path=args.save_path)
+    meta = {'Model type': args.model_type, 'P': str(args.p), 'Q': str(args.q)}
+    score = Score(args.model_path, meta)
+    score.evaluate(data_path=args.data_path, save_path=args.save_path)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {

@@ -117,11 +117,11 @@ def train(args, train_loader, model, criterion, optimizer, epoch):
 
 
 def netParams(model):
-    '''
+    """
     helper function to see total network parameters
     :param model: model
     :return: total network parameters
-    '''
+    """
     total_paramters = 0
     for parameter in model.parameters():
         i = len(parameter.size())
@@ -134,11 +134,11 @@ def netParams(model):
 
 
 def trainValidateSegmentation(args):
-    '''
-        Main function for trainign and validation
-        :param args: global arguments
-        :return: None
-        '''
+    """
+    Main function for training and validation
+    :param args: global arguments
+    :return: None
+    """
     # check if processed data file exists or not
     if not os.path.isfile(args.cached_data_file):
         dataLoad = LoadData(args.data_path, args.classes, args.cached_data_file)

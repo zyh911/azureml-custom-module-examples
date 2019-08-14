@@ -1,4 +1,4 @@
-name: ESPNet Training
+name: ESPNet Train
 id: c619d220-f6f9-49aa-8084-b941ff702525
 category: Machine Learning\Train
 description: Creates a ESPNet for semantic segmentation and trains it
@@ -11,7 +11,7 @@ inputs:
   type: ModelFolder
   port: True
   description: model_path
-- name: Model Type
+- name: Model type
   type: Mode
   default: 'ESPNet'
   description: model_type
@@ -72,7 +72,7 @@ implementation:
     - --model_path
     - inputValue: Model path
     - --model_type
-    - inputValue: Model Type
+    - inputValue: Model type
     - --pretrained
     - inputValue: Pretrained
     - --max_epochs
