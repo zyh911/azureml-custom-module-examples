@@ -6,20 +6,18 @@ from io import BytesIO
 from argparse import ArgumentParser
 import base64
 import pandas as pd
-import pyarrow.parquet as pq
 from azureml.studio.modulehost.handler.port_io_handler import OutputHandler
 from azureml.studio.common.datatypes import DataTypes
 from azureml.studio.common.datatable.data_table import DataTable
 
 import torch
-import torch.nn as nn
 from torchvision import transforms
 
-from .model import deeplabv3_resnet101
+from .model import deeplabv3_resnet101, fcn_resnet101
 
 
-class SSDeeplabv3:
-    def __init__(self, model_path='saved_model', meta={}):
+class Score:
+    def __init__(self, model_path, meta={}):
         self.pallete = [
             [255, 255, 255],
             [128, 64, 128],
@@ -50,8 +48,10 @@ class SSDeeplabv3:
             transforms.ToTensor(),
             transforms.Normalize(mean=self.mean, std=self.stdv),
         ])
-
-        self.model = deeplabv3_resnet101(pretrained=True)
+        if meta['Model type'] == 'deeplabv3_resnet101':
+            self.model = deeplabv3_resnet101(pretrained=False)
+        else:
+            self.model = fcn_resnet101(pretrained=False)
         self.model.load_state_dict(torch.load(os.path.join(model_path, 'model.pth'), map_location='cpu'))
         if torch.cuda.is_available():
             self.model = self.model.cuda()
@@ -98,22 +98,19 @@ class SSDeeplabv3:
         df = pd.DataFrame(my_list, columns=['mask', 'fusion'])
         return df
 
-    def evaluate(self, data_path='test_data', save_path='outputs'):
+    def evaluate(self, data_path, save_path):
         os.makedirs(save_path, exist_ok=True)
         input = pd.read_parquet(os.path.join(data_path, 'data.dataset.parquet'), engine='pyarrow')
         df = self.run(input)
-        # df.to_parquet(fname=os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
-        # input = pd.read_parquet(os.path.join(self.save_path, 'labels.parquet'), engine='pyarrow')
-        # print(input)
         dt = DataTable(df)
         OutputHandler.handle_output(data=dt, file_path=save_path,
                                     file_name='data.dataset.parquet', data_type=DataTypes.DATASET)
 
 
 def test(args):
-    meta = {}
-    ssespnet = SSDeeplabv3(args.model_path, meta)
-    ssespnet.evaluate(data_path=args.data_path, save_path=args.save_path)
+    meta = {'Model type': args.model_type}
+    score = Score(args.model_path, meta)
+    score.evaluate(data_path=args.data_path, save_path=args.save_path)
 
     # Dump data_type.json as a work around until SMT deploys
     dct = {
@@ -137,8 +134,9 @@ def test(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
+    parser.add_argument('--model_type', default='deeplabv3_resnet101', help='Model type')
+    parser.add_argument('--model_path', default='script/saved_model', help='Model directory')
     parser.add_argument('--data_path', default='script/outputs', help='Data directory')
     parser.add_argument('--save_path', default='script/outputs2', help='directory to save the results')
-    parser.add_argument('--model_path', default='script/saved_model', help='Model directory')
 
     test(parser.parse_args())

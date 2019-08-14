@@ -1,12 +1,19 @@
-name: Deeplabv3 Training
+name: Deeplabv3 Train
 id: b9406d46-a5e9-4702-9faf-fe383607cc40
 category: Machine Learning\Train
 description: Creates a Deeplabv3 for semantic segmentation and trains it
 inputs:
-- name: Data path
-  type: GenericFolder
+- name: Model type
+  type: Mode
+  default: 'deeplabv3_resnet101'
+  description: model_type
+  options:
+    - 'deeplabv3_resnet101'
+    - 'fcn_resnet101'
+- name: Model path
+  type: ModelFolder
   port: True
-  description: data_path
+  description: model_path
 outputs:
 - name: Save path
   type: ModelFolder
@@ -33,7 +40,9 @@ implementation:
     - -m
     - script.train
     args:
-    - --data_path
-    - inputValue: Data path
+    - --model_type
+    - inputValue: Model type
+    - --model_path
+    - inputValue: Model path
     - --save_path
     - outputPath: Save path

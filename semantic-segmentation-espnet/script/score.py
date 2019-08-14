@@ -17,7 +17,7 @@ from .Model import ESPNet_Encoder, ESPNet
 
 
 class Score:
-    def __init__(self, model_path='saved_model', meta={}):
+    def __init__(self, model_path, meta={}):
         self.classes = 20
         self.pallete = [
             [128, 64, 128],
@@ -106,7 +106,7 @@ class Score:
         df = pd.DataFrame(my_list, columns=['mask', 'fusion'])
         return df
 
-    def evaluate(self, data_path='test_data', save_path='outputs'):
+    def evaluate(self, data_path, save_path):
         os.makedirs(save_path, exist_ok=True)
         input = pd.read_parquet(os.path.join(data_path, 'data.dataset.parquet'), engine='pyarrow')
         df = self.run(input)
